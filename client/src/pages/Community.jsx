@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Card, CardBody, Button, Input, Textarea } from "@nextui-org/react";
-import { communityService } from '../services/api';
+import { communityService } from "../services/api";
 
 // Sample community posts
 const samplePosts = [
@@ -24,14 +24,12 @@ const samplePosts = [
 
 function Community() {
   const [posts, setPosts] = useState(samplePosts);
-  const [newPost, setNewPost] = useState({ title: '', content: '' });
+  const [newPost, setNewPost] = useState({ title: "", content: "" });
 
   const handleCreatePost = async () => {
     if (!newPost.title.trim() || !newPost.content.trim()) return;
 
     try {
-      // Simulating API call
-      // const response = await communityService.createPost(newPost);
       const post = {
         id: posts.length + 1,
         ...newPost,
@@ -39,17 +37,19 @@ function Community() {
         likes: 0,
         comments: 0,
       };
-      
+
       setPosts([post, ...posts]);
-      setNewPost({ title: '', content: '' });
+      setNewPost({ title: "", content: "" });
     } catch (error) {
-      console.error('Failed to create post:', error);
+      console.error("Failed to create post:", error);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-6">Community Support</h1>
+      <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-6">
+        Community Support
+      </h1>
 
       <Card className="mb-6">
         <CardBody className="space-y-4">
@@ -63,9 +63,11 @@ function Community() {
             label="Content"
             placeholder="Share your thoughts..."
             value={newPost.content}
-            onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+            onChange={(e) =>
+              setNewPost({ ...newPost, content: e.target.value })
+            }
           />
-          <Button color="primary" onClick={handleCreatePost}>
+          <Button color="primary" onPress={handleCreatePost}>
             Create Post
           </Button>
         </CardBody>
@@ -76,7 +78,9 @@ function Community() {
           <Card key={post.id}>
             <CardBody>
               <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">{post.content}</p>
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                {post.content}
+              </p>
               <div className="flex justify-between text-sm text-gray-500">
                 <span>{post.author}</span>
                 <div className="space-x-4">

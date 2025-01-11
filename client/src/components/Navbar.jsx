@@ -1,9 +1,21 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; 
 import { Navbar as NextUINavbar, NavbarBrand, NavbarContent, NavbarItem, Button, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@nextui-org/react";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { auth } from '../services/firebaseConfig'; 
 
 function Navbar() {
+  const navigate = useNavigate(); 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const menuItems = [
     { name: "Dashboard", path: "/" },
@@ -21,47 +33,77 @@ function Navbar() {
           className="sm:hidden"
         />
         <NavbarBrand>
-          <Link to="/" className="font-bold text-inherit">Mental Health Support</Link>
+          <Button
+            auto
+            flat
+            color="inherit"
+            onPress={() => navigate("/")} 
+          >
+            Mental Health Support
+          </Button>
         </NavbarBrand>
       </NavbarContent>
 
       <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        <NavbarItem>
-          <Link to="/" className="text-inherit">Dashboard</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link to="/chat" className="text-inherit">Chat</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link to="/community" className="text-inherit">Community</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link to="/resources" className="text-inherit">Resources</Link>
-        </NavbarItem>
-      </NavbarContent>
-
-      <NavbarContent justify="end" className="hidden sm:flex">
-        <NavbarItem>
-          <Link to="/profile">
-            <Button color="primary" variant="flat">
-              Profile
+        {isAuthenticated ? (
+          menuItems.map((item, index) => (
+            <NavbarItem key={index}>
+              <Button
+                auto
+                flat
+                color="gradient"
+                onPress={() => navigate(item.path)} 
+              >
+                {item.name}
+              </Button>
+            </NavbarItem>
+          ))
+        ) : (
+          <NavbarItem>
+            <Button
+              auto
+              flat
+              color="primary"
+              onPress={() => navigate("/login")} 
+            >
+              Login
             </Button>
-          </Link>
-        </NavbarItem>
+          </NavbarItem>
+        )}
       </NavbarContent>
 
       <NavbarMenu>
-        {menuItems.map((item, index) => (
-          <NavbarMenuItem key={index}>
-            <Link
-              to={item.path}
-              className="w-full text-inherit"
-              onClick={() => setIsMenuOpen(false)}
+        {isAuthenticated ? (
+          menuItems.map((item, index) => (
+            <NavbarMenuItem key={index}>
+              <Button
+                auto
+                flat
+                color="gradient"
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  navigate(item.path); 
+                }}
+              >
+                {item.name}
+              </Button>
+            </NavbarMenuItem>
+          ))
+        ) : (
+          <NavbarMenuItem>
+            <Button
+              auto
+              flat
+              color="primary"
+              onPress={() => {
+                setIsMenuOpen(false);
+                navigate("/login"); 
+              }}
             >
-              {item.name}
-            </Link>
+              Login
+            </Button>
           </NavbarMenuItem>
-        ))}
+        )}
       </NavbarMenu>
     </NextUINavbar>
   );

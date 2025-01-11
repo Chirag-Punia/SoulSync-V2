@@ -1,12 +1,16 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Card, CardBody, Input, Button } from "@nextui-org/react";
-import { chatService } from '../services/api';
+import { chatService } from "../services/api";
 
 // Sample chat messages
 const initialMessages = [
   { id: 1, text: "Hello! How are you feeling today?", sender: "bot" },
   { id: 2, text: "I'm feeling a bit anxious", sender: "user" },
-  { id: 3, text: "I understand. Let's talk about what's causing your anxiety.", sender: "bot" },
+  {
+    id: 3,
+    text: "I understand. Let's talk about what's causing your anxiety.",
+    sender: "bot",
+  },
 ];
 
 function ChatBot() {
@@ -26,19 +30,17 @@ function ChatBot() {
     setNewMessage("");
 
     try {
-      // Simulating API call
-      // const response = await chatService.sendMessage(newMessage);
       const botResponse = {
         id: messages.length + 2,
         text: "I'm here to help. Can you tell me more about what you're experiencing?",
         sender: "bot",
       };
-      
+
       setTimeout(() => {
-        setMessages(prev => [...prev, botResponse]);
+        setMessages((prev) => [...prev, botResponse]);
       }, 1000);
     } catch (error) {
-      console.error('Failed to get bot response:', error);
+      console.error("Failed to get bot response:", error);
     }
   };
 
@@ -66,7 +68,7 @@ function ChatBot() {
               </div>
             ))}
           </div>
-          
+
           <div className="flex gap-2">
             <Input
               value={newMessage}
@@ -75,7 +77,7 @@ function ChatBot() {
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               className="flex-grow"
             />
-            <Button color="primary" onClick={handleSendMessage}>
+            <Button color="primary" onPress={handleSendMessage}>
               Send
             </Button>
           </div>
