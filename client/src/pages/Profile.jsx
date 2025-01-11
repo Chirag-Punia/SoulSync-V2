@@ -1,13 +1,13 @@
 import { Card, CardBody, Input, Button, Avatar, Switch } from "@nextui-org/react";
 import { useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 
 function Profile() {
+  const { isDark, toggleTheme } = useTheme();
   const [profile, setProfile] = useState({
     name: "John Doe",
     email: "john@example.com",
     notifications: true,
-    darkMode: false,
-    language: "English",
     shareData: true
   });
 
@@ -85,8 +85,8 @@ function Profile() {
                 <p className="text-sm text-gray-500">Toggle dark theme</p>
               </div>
               <Switch
-                checked={profile.darkMode}
-                onChange={(e) => setProfile({ ...profile, darkMode: e.target.checked })}
+                checked={isDark}
+                onChange={toggleTheme}
               />
             </div>
 
