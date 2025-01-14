@@ -26,7 +26,7 @@ function Signup() {
     try {
       await signInWithPopup(auth, googleProvider);
       toast.success("Google signup successful!");
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
       console.error("Google Signup Error: ", error);
       toast.error("Google signup failed. Please try again.");
