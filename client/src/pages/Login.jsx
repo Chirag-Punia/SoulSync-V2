@@ -14,25 +14,53 @@ function Login() {
     navigate("/signup");
   };
 
-
   const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firebaseUid: user.uid,
+          email: user.email,
+          displayName: user.displayName || "Anonymous",
+        }),
+      });
+
       toast.success("Login successful!");
       navigate("/");
     } catch (error) {
-      console.error("Login Error: ", error);
+      console.error("Login Error:", error);
+      toast.error("Login failed. Please try again.");
     }
   };
 
-
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firebaseUid: user.uid,
+          email: user.email,
+          displayName: user.displayName || "Anonymous",
+        }),
+      });
+
       toast.success("Google Login successful!");
       navigate("/");
     } catch (error) {
-      console.error("Google Login Error: ", error);
+      console.error("Google Login Error:", error);
+      toast.error("Google Login failed. Please try again.");
     }
   };
 
@@ -48,8 +76,8 @@ function Login() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="mb-4"
+        variant="bordered"
       />
-
 
       <Input
         clearable
@@ -58,13 +86,17 @@ function Login() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         className="mb-6"
+        variant="bordered"
       />
 
-
-      <Button onPress={handleLogin} className="w-full mt-4">
+      <Button
+        onPress={handleLogin}
+        className="w-full mt-4"
+        variant="ghost"
+        color="primary"
+      >
         Login
       </Button>
-
 
       <Button
         onPress={handleGoogleLogin}
@@ -80,17 +112,18 @@ function Login() {
         Login with Google
       </Button>
 
-
       <Button
         onPress={handleRedirectToSignup}
         className="w-full mt-4"
+        variant="bordered"
+        v
         color="success"
         css={{
           fontWeight: "600",
           padding: "10px 16px",
           borderRadius: "8px",
           "&:hover": {
-            backgroundColor: "#e8f5e9", 
+            backgroundColor: "#e8f5e9",
           },
         }}
       >

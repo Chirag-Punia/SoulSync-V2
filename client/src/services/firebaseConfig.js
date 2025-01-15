@@ -1,5 +1,11 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import axios from "axios";
+import {
+  getAuth,
+  deleteUser,
+  updatePassword,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import {
   GoogleAuthProvider,
   FacebookAuthProvider,
@@ -19,6 +25,96 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+export const deleteUserAccount = async () => {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const providerId = user.providerData[0]?.providerId;
+
+    console.warn("Deleting chats for user.");
+
+    await axios.delete(
+      `${import.meta.env.VITE_API_BASE_URL}/chat/${user.uid}`,
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+    console.warn("Deleting posts for user.");
+
+    await axios.delete(
+      `${import.meta.env.VITE_API_BASE_URL}/delete/${user.uid}`,
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+
+
+    if (providerId !== "google.com") {
+      await deleteUser(user);
+
+    }
+  } catch (error) {
+    console.error("Error deleting account or related data:", error);
+    throw error;
+  }
+};
+
+export const exportUserData = async () => {
+  try {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return null;
+
+    const chatHistoryResponse = await axios.get(
+      `${import.meta.env.VITE_API_BASE_URL}/chat/${user.uid}`,
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+    const chats = chatHistoryResponse.data;
+
+    const postsResponse = await axios.get(
+      `${import.meta.env.VITE_API_BASE_URL}/posts/${user.uid}`,
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+    const posts = postsResponse.data;
+
+    return {
+      userData: {
+        email: user.email,
+        displayName: user.displayName,
+        createdAt: user.metadata.creationTime,
+      },
+      chats,
+      posts,
+    };
+  } catch (error) {
+    console.error("Error exporting data:", error);
+    throw error;
+  }
+};
+
+export const resetUserPassword = async (email) => {
+  try {
+    await sendPasswordResetEmail(auth, email);
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    throw error;
+  }
+};
 
 export const googleProvider = new GoogleAuthProvider();
 export const facebookProvider = new FacebookAuthProvider();

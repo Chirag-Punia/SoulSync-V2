@@ -49,7 +49,6 @@ export class ChatController {
       const { userId } = req.params;
       const { message } = req.body;
 
-
       if (!userId || !message) {
         return res
           .status(400)
@@ -110,6 +109,22 @@ export class ChatController {
     } catch (error) {
       console.error("Failed to fetch chat history:", error);
       res.status(500).json({ error: "Failed to fetch chat history" });
+    }
+  };
+  deleteChatHistory = async (req, res) => {
+    try {
+      const { userId } = req.params;
+
+      if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      await Chat.deleteOne({ userId });
+
+      res.status(200).json({ message: "Chat history deleted successfully." });
+    } catch (error) {
+      console.error("Failed to delete chat history:", error);
+      res.status(500).json({ error: "Failed to delete chat history" });
     }
   };
 }

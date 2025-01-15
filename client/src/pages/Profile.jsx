@@ -6,7 +6,7 @@ import {
   Avatar,
   Switch,
 } from "@nextui-org/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import {
@@ -14,52 +14,71 @@ import {
   googleProvider,
   facebookProvider,
   twitterProvider,
+  deleteUserAccount,
+  exportUserData,
+  resetUserPassword,
 } from "../services/firebaseConfig";
 import {
   getAuth,
   updateProfile,
   signInWithPopup,
   signOut,
+  getIdToken,
 } from "firebase/auth";
-
+import axios from "axios";
 function Profile() {
   const navigator = useNavigate();
   const { isDark, toggleTheme } = useTheme();
-
   const [profile, setProfile] = useState({
     name: "",
     email: "",
     notifications: true,
     shareData: true,
+    isAnonymous: false,
     connectedAccounts: {
       google: false,
       facebook: false,
       twitter: false,
     },
   });
-
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const user = getAuth().currentUser;
-    if (user) {
-      setProfile((prev) => ({
-        ...prev,
-        name: user.displayName || "John Doe",
-        email: user.email || "No email",
-        connectedAccounts: {
-          google: user.providerData.some(
-            (provider) => provider.providerId === "google.com"
-          ),
-          facebook: user.providerData.some(
-            (provider) => provider.providerId === "facebook.com"
-          ),
-          twitter: user.providerData.some(
-            (provider) => provider.providerId === "twitter.com"
-          ),
-        },
-      }));
-    }
+    const fetchProfileData = async () => {
+      try {
+        const token = await getIdToken(auth.currentUser);
+
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/data/user-profile`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const userData = response.data;
+        setProfile((prev) => ({
+          ...prev,
+          name: userData.displayName || prev.name,
+          email: userData.email || prev.email,
+          notifications: userData.preferences?.notifications ?? false,
+          shareData: userData.preferences?.shareData ?? false,
+          darkMode: userData.preferences?.darkMode ?? false,
+          isAnonymous: userData.isAnonymous,
+          connectedAccounts: {
+            google: userData.connectedAccounts?.google || false,
+            facebook: userData.connectedAccounts?.facebook || false,
+            twitter: userData.connectedAccounts?.twitter || false,
+          },
+        }));
+      } catch (error) {
+        console.error("Error fetching profile data from backend:", error);
+      }
+    };
+
+    fetchProfileData();
   }, []);
 
   const getAccountButtonStyle = (account) => {
@@ -73,54 +92,188 @@ function Profile() {
     };
     return buttonStyles[account];
   };
-
-  const handleConnectAccount = async (account) => {
+  const handleSave = async () => {
     try {
-      let provider;
-      switch (account) {
-        case "google":
-          provider = googleProvider;
-          break;
-        case "facebook":
-          provider = facebookProvider;
-          break;
-        case "twitter":
-          provider = twitterProvider;
-          break;
-        default:
-          break;
-      }
+      await updateProfile(auth.currentUser, {
+        displayName: profile.name,
+      });
+      const updatedProfile = {
+        name: profile.name,
+        email: profile.email,
+        notifications: profile.notifications,
+        shareData: profile.shareData,
+      };
+      const token = await getIdToken(auth.currentUser);
 
-      if (provider) {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        setProfile((prev) => ({
-          ...prev,
-          connectedAccounts: {
-            ...prev.connectedAccounts,
-            [account]: user.providerData.some(
-              (provider) => provider.providerId === `${account}.com`
-            ),
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/data/update-profile`,
+        updatedProfile,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        }));
-      }
+        }
+      );
+      setIsEditing(false);
     } catch (error) {
-      console.error(`${account} connection error:`, error);
+      console.error("Error saving profile: ", error);
     }
   };
 
-  const handleSave = async () => {
-    if (profile.name !== "" && profile.email !== "") {
+  const handleDeleteAccount = async () => {
+    if (
+      window.confirm(
+        "Are you sure you want to delete your account? This action cannot be undone."
+      )
+    ) {
+      setIsLoading(true);
       try {
-        await updateProfile(auth.currentUser, {
-          displayName: profile.name,
-          email: profile.email,
-        });
-
-        setIsEditing(false);
+        await deleteUserAccount();
+        await axios.delete(
+          `${import.meta.env.VITE_API_BASE_URL}/data/delete-user`
+        );
+        navigator("/login");
       } catch (error) {
-        console.error("Error saving profile: ", error);
+        console.error("Failed to delete account:", error);
+        alert("Failed to delete account. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
+    }
+  };
+
+  const handleExportData = async () => {
+    try {
+      const data = await exportUserData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "my-data.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export data:", error);
+      alert("Failed to export data. Please try again.");
+    }
+  };
+
+  const handleResetPassword = async () => {
+    try {
+      await resetUserPassword(auth.currentUser.email);
+      alert("Password reset email sent. Please check your inbox.");
+    } catch (error) {
+      console.error("Failed to reset password:", error);
+      alert("Failed to reset password. Please try again.");
+    }
+  };
+
+  const toggleAnonymous = async () => {
+    try {
+      const token = await getIdToken(auth.currentUser);
+
+      const response = await axios.patch(
+        `${import.meta.env.VITE_API_BASE_URL}/data/toggle-anonymous`,
+        { isAnonymous: !profile.isAnonymous },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setProfile((prev) => ({
+          ...prev,
+          isAnonymous: !prev.isAnonymous,
+        }));
+      }
+    } catch (error) {
+      console.error("Error toggling anonymous mode:", error);
+    }
+  };
+
+  const handleConnectAccount = async (provider) => {
+    const auth = getAuth();
+    let selectedProvider;
+
+    switch (provider) {
+      case "google":
+        selectedProvider = googleProvider;
+        break;
+      case "facebook":
+        selectedProvider = facebookProvider;
+        break;
+      case "twitter":
+        selectedProvider = twitterProvider;
+        break;
+      default:
+        return;
+    }
+
+    try {
+      const result = await signInWithPopup(auth, selectedProvider);
+      const user = result.user;
+
+      await changeStatus(provider);
+
+      setProfile((prev) => ({
+        ...prev,
+        connectedAccounts: {
+          ...prev.connectedAccounts,
+          [provider]: true,
+        },
+      }));
+    } catch (error) {
+      console.error("Error during social login:", error);
+    }
+  };
+
+  const changeStatus = async (provider) => {
+    try {
+      const token = await getIdToken(auth.currentUser);
+
+      const response = await axios.patch(
+        `${import.meta.env.VITE_API_BASE_URL}/data/connect-account`,
+        {
+          provider: provider,
+          status: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+    } catch (error) {
+      console.error("Error saving user data to backend:", error);
+    }
+  };
+
+  const handleUpdatePreferences = async () => {
+    const updatedPreferences = {
+      notifications: !profile.notifications,
+      shareData: profile.shareData,
+      darkMode: isDark,
+    };
+    const token = await getIdToken(auth.currentUser);
+    try {
+      await axios.patch(
+        `${import.meta.env.VITE_API_BASE_URL}/data/update-preferences`,
+        updatedPreferences,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error updating preferences:", error);
     }
   };
 
@@ -183,25 +336,49 @@ function Profile() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div>
+                <p className="font-semibold">Stay Anonymous</p>
+                <p className="text-sm text-gray-500">
+                  Hide your name in community posts
+                </p>
+              </div>
+              <Switch
+                isSelected={profile.isAnonymous}
+                onValueChange={toggleAnonymous}
+              />
+            </div>
+
+            <div className="flex justify-between items-center">
+              <div>
                 <p className="font-semibold">Notifications</p>
                 <p className="text-sm text-gray-500">
                   Receive alerts and reminders
                 </p>
               </div>
               <Switch
-                checked={profile.notifications}
-                onChange={(e) =>
-                  setProfile({ ...profile, notifications: e.target.checked })
-                }
+                isSelected={profile.notifications}
+                onChange={async (e) => {
+                  const updatedValue = !profile.notifications;
+                  setProfile((prev) => ({
+                    ...prev,
+                    notifications: updatedValue,
+                  }));
+                  await handleUpdatePreferences();
+                }}
               />
             </div>
 
             <div className="flex justify-between items-center">
               <div>
-                <p className="font-semibold">Theme</p>
-                <p className="text-sm text-gray-500">Toggle theme</p>
+                <p className="font-semibold">Dark Mode</p>
+                <p className="text-sm text-gray-500">Toggle dark theme</p>
               </div>
-              <Switch checked={isDark} onChange={toggleTheme} />
+              <Switch
+                isSelected={isDark}
+                onValueChange={async () => {
+                  toggleTheme();
+                  await handleUpdatePreferences();
+                }}
+              />
             </div>
 
             <div className="flex justify-between items-center">
@@ -212,10 +389,15 @@ function Profile() {
                 </p>
               </div>
               <Switch
-                checked={profile.shareData}
-                onChange={(e) =>
-                  setProfile({ ...profile, shareData: e.target.checked })
-                }
+                isSelected={profile.shareData}
+                onChange={async (e) => {
+                  const updatedValue = !profile.shareData;
+                  setProfile((prev) => ({
+                    ...prev,
+                    shareData: updatedValue,
+                  }));
+                  await handleUpdatePreferences();
+                }}
               />
             </div>
           </div>
@@ -274,13 +456,29 @@ function Profile() {
             >
               Log Out
             </Button>
-            <Button color="danger" variant="light" className="w-full">
+            <Button
+              color="danger"
+              variant="light"
+              className="w-full"
+              onPress={handleDeleteAccount}
+              isLoading={isLoading}
+            >
               Delete Account
             </Button>
-            <Button color="primary" variant="light" className="w-full">
+            <Button
+              color="primary"
+              variant="light"
+              className="w-full"
+              onPress={handleExportData}
+            >
               Export My Data
             </Button>
-            <Button color="warning" variant="light" className="w-full">
+            <Button
+              color="warning"
+              variant="light"
+              className="w-full"
+              onPress={handleResetPassword}
+            >
               Reset Password
             </Button>
           </div>
