@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { auth } from './firebaseConfig';
 
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://soulsync-v2.onrender.com/api';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
