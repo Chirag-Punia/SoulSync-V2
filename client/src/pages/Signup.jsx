@@ -12,31 +12,32 @@ function Signup() {
   const navigate = useNavigate();
 
   const handleSignup = async () => {
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    const user = userCredential.user;
 
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firebaseUid: user.uid,
-          email: user.email,
-          displayName: user.displayName || "Anonymous",
-        }),
-      });
+    await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        firebaseUid: user.uid,
+        email: user.email,
+        displayName: user.displayName || "Anonymous",
+      }),
+    });
 
-      toast.success("Login successful!");
-      navigate("/");
-    } catch (error) {
-      console.error("Login Error:", error);
-      toast.error("Login failed. Please try again.");
-    }
-  };
+    toast.success("Signup successful!");
+    navigate("/");
+  } catch (error) {
+    console.error("Signup Error:", error);
+    const errorMessage = error.message || "Signup failed. Please try again.";
+    toast.error(errorMessage);
+  }
+};
 
   const handleGoogleSignup = async () => {
     try {
