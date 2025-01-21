@@ -47,7 +47,7 @@ export const deleteUserAccount = async () => {
     console.warn("Deleting posts for user.");
 
     await axios.delete(
-      `${import.meta.env.VITE_API_BASE_URL}/delete/${user.uid}`,
+      `${import.meta.env.VITE_API_BASE_URL}/posts/delete/${user.uid}`,
       {
         headers: {
           Authorization: `Bearer ${await user.getIdToken()}`,
