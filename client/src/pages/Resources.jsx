@@ -11,27 +11,27 @@ const resourceCategories = [
     id: 1,
     title: "Mental Health Articles",
     resources: [
-      { id: 1, title: "Understanding Anxiety", type: "article", link: "#" },
-      { id: 2, title: "Depression: Signs and Symptoms", type: "article", link: "#" },
-      { id: 3, title: "Stress Management Techniques", type: "article", link: "#" },
+      { id: 1, title: "Understanding Anxiety", type: "article", link: "https://www.depression.org.nz/understanding-mental-health/understanding-anxiety" },
+      { id: 2, title: "Depression: Signs and Symptoms", type: "article", link: "https://www.depression.org.nz/understanding-mental-health/understanding-depression" },
+      { id: 3, title: "Stress Management Techniques", type: "article", link: "https://www.headspace.com/stress" },
     ],
   },
   {
     id: 2,
     title: "Meditation Guides",
     resources: [
-      { id: 4, title: "5-Minute Breathing Exercise", type: "video", link: "#" },
-      { id: 5, title: "Guided Sleep Meditation", type: "audio", link: "#" },
-      { id: 6, title: "Mindfulness Basics", type: "article", link: "#" },
+      { id: 4, title: "5-Minute Breathing Exercise", type: "video", link: "https://www.headspace.com/meditation/5-minute-meditation" },
+      { id: 5, title: "Guided Sleep Meditation", type: "audio", link: "https://www.headspace.com/meditation/sleep" },
+      { id: 6, title: "Mindfulness Basics", type: "article", link: "https://www.headspace.com/mindfulness" },
     ],
   },
   {
     id: 3,
     title: "Crisis Support",
     resources: [
-      { id: 7, title: "24/7 Crisis Hotline", type: "contact", link: "tel:1234567890" },
-      { id: 8, title: "Find a Therapist", type: "tool", link: "#" },
-      { id: 9, title: "Emergency Resources", type: "article", link: "#" },
+      { id: 7, title: "24/7 Crisis Hotline", type: "contact", link: "tel:988" },
+      { id: 8, title: "Find a Therapist", type: "tool", link: "https://www.psychologytoday.com/us/therapists" },
+      { id: 9, title: "Emergency Resources", type: "article", link: "https://www.thestatesman.com/india/24x7-toll-free-mental-health-rehabilitation-helpline-kiran-launched-13-languages-1502922716.html" },
     ],
   },
 ];
