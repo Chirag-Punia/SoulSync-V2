@@ -1,15 +1,23 @@
 import { Card, CardBody } from "@nextui-org/react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useState, useEffect } from 'react';
-import { moodService } from '../services/api';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { useState, useEffect } from "react";
+import { moodService } from "../services/moodService";
 
 // Sample mood data
 const sampleMoodData = [
-  { date: '2024-02-01', mood: 7 },
-  { date: '2024-02-02', mood: 6 },
-  { date: '2024-02-03', mood: 8 },
-  { date: '2024-02-04', mood: 5 },
-  { date: '2024-02-05', mood: 9 },
+  { date: "2024-02-01", mood: 7 },
+  { date: "2024-02-02", mood: 6 },
+  { date: "2024-02-03", mood: 8 },
+  { date: "2024-02-04", mood: 5 },
+  { date: "2024-02-05", mood: 9 },
 ];
 
 function Dashboard() {
@@ -17,13 +25,10 @@ function Dashboard() {
   const [stressLevel, setStressLevel] = useState(4);
 
   useEffect(() => {
-    // Simulating API call
     const fetchMoodData = async () => {
       try {
-        // const data = await moodService.getMoodHistory();
-        // setMoodData(data);
       } catch (error) {
-        console.error('Failed to fetch mood data:', error);
+        console.error("Failed to fetch mood data:", error);
       }
     };
 
@@ -32,8 +37,10 @@ function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-4xl font-bold text-gray-800 dark:text-white">Welcome Back!</h1>
-      
+      <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
+        Welcome Back!
+      </h1>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardBody>
@@ -54,14 +61,16 @@ function Dashboard() {
 
         <Card>
           <CardBody>
-            <h2 className="text-2xl font-semibold mb-4">Current Stress Level</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              Current Stress Level
+            </h2>
             <div className="flex items-center justify-center">
               <div className="relative w-48 h-48">
-                <div 
+                <div
                   className="absolute inset-0 rounded-full border-8"
                   style={{
-                    borderColor: `hsl(${120 - (stressLevel * 12)}, 70%, 50%)`,
-                    transform: 'rotate(-90deg)',
+                    borderColor: `hsl(${120 - stressLevel * 12}, 70%, 50%)`,
+                    transform: "rotate(-90deg)",
                   }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">

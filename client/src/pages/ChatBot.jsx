@@ -1,44 +1,84 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import { Card, CardBody, Input, Button } from "@nextui-org/react";
-import { chatService } from '../services/api';
-
-// Sample chat messages
-const initialMessages = [
-  { id: 1, text: "Hello! How are you feeling today?", sender: "bot" },
-  { id: 2, text: "I'm feeling a bit anxious", sender: "user" },
-  { id: 3, text: "I understand. Let's talk about what's causing your anxiety.", sender: "bot" },
-];
+import { chatService } from "../services/chatService";
+import { auth } from "../services/firebaseConfig";
+import { useNavigate } from "react-router-dom";
+import Typewriter from "typewriter-effect";
+import { Spinner } from "@nextui-org/react";
 
 function ChatBot() {
-  const [messages, setMessages] = useState(initialMessages);
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [typingMessage, setTypingMessage] = useState(null);
+  const [loadingChats, setLoadingChats] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+      await initializeChat(user.uid);
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  const initializeChat = async (userId) => {
+    try {
+      setLoadingChats(true);
+      const chats = await chatService.initializeChat(userId);
+      setMessages(chats);
+    } catch (error) {
+      console.error("Failed to initialize chat:", error);
+    } finally {
+      setLoadingChats(false);
+    }
+  };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || isLoading || !auth.currentUser) return;
 
+    const userId = auth.currentUser.uid;
     const userMessage = {
-      id: messages.length + 1,
+      _id: Date.now(),
       text: newMessage,
       sender: "user",
+      timestamp: new Date(),
     };
 
-    setMessages([...messages, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     setNewMessage("");
+    setIsLoading(true);
 
     try {
-      // Simulating API call
-      // const response = await chatService.sendMessage(newMessage);
-      const botResponse = {
-        id: messages.length + 2,
-        text: "I'm here to help. Can you tell me more about what you're experiencing?",
-        sender: "bot",
-      };
-      
-      setTimeout(() => {
-        setMessages(prev => [...prev, botResponse]);
-      }, 1000);
+      const { response } = await chatService.sendMessage(userId, newMessage);
+
+      if (response && typeof response === "string") {
+        setTypingMessage(response);
+        const typingDuration = response.length * 50;
+
+        setTimeout(() => {
+          const botResponse = {
+            _id: Date.now() + 1,
+            text: response,
+            sender: "bot",
+            timestamp: new Date(),
+          };
+
+          setMessages((prev) => [...prev, botResponse]);
+          chatService.saveChat(userId, [userMessage, botResponse]);
+          setTypingMessage(null);
+        }, typingDuration);
+      } else {
+        console.error("Invalid response format", response);
+      }
     } catch (error) {
-      console.error('Failed to get bot response:', error);
+      console.error("Failed to send message:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -47,35 +87,59 @@ function ChatBot() {
       <Card className="h-[600px] flex flex-col">
         <CardBody className="flex flex-col p-4">
           <div className="flex-grow overflow-y-auto mb-4 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+            {loadingChats ? (
+              <div className="flex justify-center items-center h-full">
+                <Spinner size="xl" />
+              </div>
+            ) : (
+              messages.map((message) => (
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
-                    message.sender === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 dark:bg-gray-700"
+                  key={message._id}
+                  className={`flex ${
+                    message.sender === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {message.text}
+                  <div
+                    className={`max-w-[70%] rounded-lg p-3 ${
+                      message.sender === "user"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 dark:bg-gray-700"
+                    }`}
+                  >
+                    <div>{message.text}</div>
+                  </div>
+                </div>
+              ))
+            )}
+            {typingMessage && (
+              <div className="flex justify-start">
+                <div className="max-w-[70%] rounded-lg p-3 bg-gray-100 dark:bg-gray-700">
+                  <Typewriter
+                    options={{
+                      strings: [typingMessage],
+                      autoStart: true,
+                      delay: 50,
+                      cursor: "▋",
+                    }}
+                  />
                 </div>
               </div>
-            ))}
+            )}
           </div>
-          
+
           <div className="flex gap-2">
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type your message..."
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               className="flex-grow"
+              disabled={isLoading}
             />
-            <Button color="primary" onClick={handleSendMessage}>
+            <Button
+              color="primary"
+              onPress={handleSendMessage}
+              isLoading={isLoading}
+            >
               Send
             </Button>
           </div>
