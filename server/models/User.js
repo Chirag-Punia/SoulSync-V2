@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   preferences: {
     notifications: { type: Boolean, default: false },
     shareData: { type: Boolean, default: false },
-    darkMode: { type: Boolean, default: false },
+    darkMode: { type: Boolean, default: true },
   },
   connectedAccounts: {
     google: { type: Boolean, default: false },
@@ -19,5 +19,5 @@ const userSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-const User =  mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 export default User;

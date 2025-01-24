@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardBody, Input, Button } from "@nextui-org/react";
-import { chatService } from "../services/api";
+import { chatService } from "../services/chatService";
 import { auth } from "../services/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import Typewriter from "typewriter-effect";
@@ -15,28 +15,28 @@ function ChatBot() {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const unsubscribe = auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-      navigate("/login");
-      return;
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+      await initializeChat(user.uid);
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
+
+  const initializeChat = async (userId) => {
+    try {
+      setLoadingChats(true);
+      const chats = await chatService.initializeChat(userId);
+      setMessages(chats);
+    } catch (error) {
+      console.error("Failed to initialize chat:", error);
+    } finally {
+      setLoadingChats(false);
     }
-    await initializeChat(user.uid);
-  });
-
-  return () => unsubscribe();
-}, [navigate]);
-
-const initializeChat = async (userId) => {
-  try {
-    setLoadingChats(true);
-    const chats = await chatService.initializeChat(userId);
-    setMessages(chats);
-  } catch (error) {
-    console.error("Failed to initialize chat:", error);
-  } finally {
-    setLoadingChats(false);
-  }
-};
+  };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isLoading || !auth.currentUser) return;
@@ -83,69 +83,69 @@ const initializeChat = async (userId) => {
   };
 
   return (
-     <div className="max-w-3xl mx-auto">
-    <Card className="h-[600px] flex flex-col">
-      <CardBody className="flex flex-col p-4">
-        <div className="flex-grow overflow-y-auto mb-4 space-y-4">
-          {loadingChats ? ( // Display spinner if chats are loading
-            <div className="flex justify-center items-center h-full">
-              <Spinner size="xl" />
-            </div>
-          ) : (
-            messages.map((message) => (
-              <div
-                key={message._id}
-                className={`flex ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+    <div className="max-w-3xl mx-auto">
+      <Card className="h-[600px] flex flex-col">
+        <CardBody className="flex flex-col p-4">
+          <div className="flex-grow overflow-y-auto mb-4 space-y-4">
+            {loadingChats ? (
+              <div className="flex justify-center items-center h-full">
+                <Spinner size="xl" />
+              </div>
+            ) : (
+              messages.map((message) => (
                 <div
-                  className={`max-w-[70%] rounded-lg p-3 ${
-                    message.sender === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 dark:bg-gray-700"
+                  key={message._id}
+                  className={`flex ${
+                    message.sender === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div>{message.text}</div>
+                  <div
+                    className={`max-w-[70%] rounded-lg p-3 ${
+                      message.sender === "user"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100 dark:bg-gray-700"
+                    }`}
+                  >
+                    <div>{message.text}</div>
+                  </div>
+                </div>
+              ))
+            )}
+            {typingMessage && (
+              <div className="flex justify-start">
+                <div className="max-w-[70%] rounded-lg p-3 bg-gray-100 dark:bg-gray-700">
+                  <Typewriter
+                    options={{
+                      strings: [typingMessage],
+                      autoStart: true,
+                      delay: 50,
+                      cursor: "▋",
+                    }}
+                  />
                 </div>
               </div>
-            ))
-          )}
-          {typingMessage && (
-            <div className="flex justify-start">
-              <div className="max-w-[70%] rounded-lg p-3 bg-gray-100 dark:bg-gray-700">
-                <Typewriter
-                  options={{
-                    strings: [typingMessage],
-                    autoStart: true,
-                    delay: 50,
-                    cursor: "▋",
-                  }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <div className="flex gap-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-grow"
-            disabled={isLoading}
-          />
-          <Button
-            color="primary"
-            onPress={handleSendMessage}
-            isLoading={isLoading}
-          >
-            Send
-          </Button>
-        </div>
-      </CardBody>
-    </Card>
-  </div>
+          <div className="flex gap-2">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message..."
+              className="flex-grow"
+              disabled={isLoading}
+            />
+            <Button
+              color="primary"
+              onPress={handleSendMessage}
+              isLoading={isLoading}
+            >
+              Send
+            </Button>
+          </div>
+        </CardBody>
+      </Card>
+    </div>
   );
 }
 

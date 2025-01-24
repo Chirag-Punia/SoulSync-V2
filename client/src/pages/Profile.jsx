@@ -6,6 +6,7 @@ import {
   Avatar,
   Switch,
 } from "@nextui-org/react";
+import { toast } from "react-toastify";
 import { useState, useEffect, use } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
@@ -14,18 +15,10 @@ import {
   googleProvider,
   facebookProvider,
   twitterProvider,
-  deleteUserAccount,
-  exportUserData,
-  resetUserPassword,
 } from "../services/firebaseConfig";
-import {
-  getAuth,
-  updateProfile,
-  signInWithPopup,
-  signOut,
-  getIdToken,
-} from "firebase/auth";
-import axios from "axios";
+import { userService } from "../services/userService";
+import { signOut } from "firebase/auth";
+
 function Profile() {
   const navigator = useNavigate();
   const { isDark, toggleTheme } = useTheme();
@@ -47,25 +40,13 @@ function Profile() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const token = await getIdToken(auth.currentUser);
-
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/data/user-profile`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const userData = response.data;
-        setProfile((prev) => ({
-          ...prev,
-          name: userData.displayName || prev.name,
-          email: userData.email || prev.email,
+        const userData = await userService.getUserProfileData();
+        setProfile((prevProfile) => ({
+          ...prevProfile,
+          name: userData.displayName || prevProfile.name,
+          email: userData.email || prevProfile.email,
           notifications: userData.preferences?.notifications ?? false,
           shareData: userData.preferences?.shareData ?? false,
-          darkMode: userData.preferences?.darkMode ?? false,
           isAnonymous: userData.isAnonymous,
           connectedAccounts: {
             google: userData.connectedAccounts?.google || false,
@@ -74,13 +55,47 @@ function Profile() {
           },
         }));
       } catch (error) {
-        console.error("Error fetching profile data from backend:", error);
+        console.error("Profile fetch error:", error);
       }
     };
 
     fetchProfileData();
   }, []);
+  const handleUpdatePreferences = async (field) => {
+    let updatedPreferences;
 
+    switch (field) {
+      case "notifications":
+        updatedPreferences = {
+          notifications: !profile.notifications,
+          shareData: profile.shareData,
+          darkMode: isDark,
+        };
+        break;
+      case "shareData":
+        updatedPreferences = {
+          notifications: profile.notifications,
+          shareData: !profile.shareData,
+          darkMode: isDark,
+        };
+        break;
+      case "darkMode":
+        updatedPreferences = {
+          notifications: profile.notifications,
+          shareData: profile.shareData,
+          darkMode: !isDark,
+        };
+        break;
+      default:
+        return;
+    }
+
+    try {
+      await userService.updatePreferences(updatedPreferences);
+    } catch (error) {
+      console.error("Error updating preferences:", error);
+    }
+  };
   const getAccountButtonStyle = (account) => {
     const buttonStyles = {
       google:
@@ -92,28 +107,23 @@ function Profile() {
     };
     return buttonStyles[account];
   };
+  const handleResetPassword = async () => {
+    try {
+      await userService.resetPassword(profile.email);
+      alert("Password reset email sent. Please check your inbox.");
+    } catch (error) {
+      console.error("Password reset failed:", error);
+      alert("Failed to send password reset email.");
+    }
+  };
   const handleSave = async () => {
     try {
-      await updateProfile(auth.currentUser, {
-        displayName: profile.name,
-      });
       const updatedProfile = {
         name: profile.name,
         email: profile.email,
-        notifications: profile.notifications,
-        shareData: profile.shareData,
       };
-      const token = await getIdToken(auth.currentUser);
 
-      await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/data/update-profile`,
-        updatedProfile,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await userService.updateProfile(updatedProfile);
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving profile: ", error);
@@ -121,21 +131,19 @@ function Profile() {
   };
 
   const handleDeleteAccount = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete your account? This action cannot be undone."
-      )
-    ) {
+    if (window.confirm("Delete account permanently?")) {
       setIsLoading(true);
       try {
-        await deleteUserAccount();
-        await axios.delete(
-          `${import.meta.env.VITE_API_BASE_URL}/data/delete-user`
-        );
+        await userService.deleteUserAccount();
         navigator("/login");
+        toast.success("Account deleted successfully.");
       } catch (error) {
-        console.error("Failed to delete account:", error);
-        alert("Failed to delete account. Please try again.");
+        console.error("Account deletion error:", error);
+        toast.error(
+          error.code === "auth/requires-recent-login"
+            ? "Please log in again to delete your account."
+            : "Failed to delete account. Please try again later."
+        );
       } finally {
         setIsLoading(false);
       }
@@ -144,52 +152,31 @@ function Profile() {
 
   const handleExportData = async () => {
     try {
-      const data = await exportUserData();
+      const data = await userService.exportUserData();
       const blob = new Blob([JSON.stringify(data, null, 2)], {
         type: "application/json",
       });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "my-data.json";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "user-data.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
-      console.error("Failed to export data:", error);
-      alert("Failed to export data. Please try again.");
-    }
-  };
-
-  const handleResetPassword = async () => {
-    try {
-      await resetUserPassword(auth.currentUser.email);
-      alert("Password reset email sent. Please check your inbox.");
-    } catch (error) {
-      console.error("Failed to reset password:", error);
-      alert("Failed to reset password. Please try again.");
+      console.error("Data export error:", error);
     }
   };
 
   const toggleAnonymous = async () => {
     try {
-      const token = await getIdToken(auth.currentUser);
+      const newAnonymousStatus = !profile.isAnonymous;
+      const success = await userService.toggleAnonymous(newAnonymousStatus);
 
-      const response = await axios.patch(
-        `${import.meta.env.VITE_API_BASE_URL}/data/toggle-anonymous`,
-        { isAnonymous: !profile.isAnonymous },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 200) {
+      if (success) {
         setProfile((prev) => ({
           ...prev,
-          isAnonymous: !prev.isAnonymous,
+          isAnonymous: newAnonymousStatus,
         }));
       }
     } catch (error) {
@@ -219,7 +206,7 @@ function Profile() {
       const result = await signInWithPopup(auth, selectedProvider);
       const user = result.user;
 
-      await changeStatus(provider);
+      await userService.connectAccount(provider);
 
       setProfile((prev) => ({
         ...prev,
@@ -230,50 +217,6 @@ function Profile() {
       }));
     } catch (error) {
       console.error("Error during social login:", error);
-    }
-  };
-
-  const changeStatus = async (provider) => {
-    try {
-      const token = await getIdToken(auth.currentUser);
-
-      const response = await axios.patch(
-        `${import.meta.env.VITE_API_BASE_URL}/data/connect-account`,
-        {
-          provider: provider,
-          status: true,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-    } catch (error) {
-      console.error("Error saving user data to backend:", error);
-    }
-  };
-
-  const handleUpdatePreferences = async () => {
-    const updatedPreferences = {
-      notifications: !profile.notifications,
-      shareData: profile.shareData,
-      darkMode: isDark,
-    };
-    const token = await getIdToken(auth.currentUser);
-    try {
-      await axios.patch(
-        `${import.meta.env.VITE_API_BASE_URL}/data/update-preferences`,
-        updatedPreferences,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-    } catch (error) {
-      console.error("Error updating preferences:", error);
     }
   };
 
@@ -362,7 +305,7 @@ function Profile() {
                     ...prev,
                     notifications: updatedValue,
                   }));
-                  await handleUpdatePreferences();
+                  await handleUpdatePreferences("notifications");
                 }}
               />
             </div>
@@ -376,7 +319,7 @@ function Profile() {
                 isSelected={isDark}
                 onValueChange={async () => {
                   toggleTheme();
-                  await handleUpdatePreferences();
+                  await handleUpdatePreferences("darkMode");
                 }}
               />
             </div>
@@ -396,7 +339,7 @@ function Profile() {
                     ...prev,
                     shareData: updatedValue,
                   }));
-                  await handleUpdatePreferences();
+                  await handleUpdatePreferences("shareData");
                 }}
               />
             </div>

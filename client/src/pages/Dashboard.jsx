@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useState, useEffect } from "react";
-import { moodService } from "../services/api";
+import { moodService } from "../services/moodService";
 
 // Sample mood data
 const sampleMoodData = [

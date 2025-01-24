@@ -7,6 +7,6 @@ const externSchema = new mongoose.Schema({
   providerData: [{ providerId: String, uid: String, displayName: String, email: String }],
 }, { timestamps: true });
 
-const extern = mongoose.model('extern', externSchema);
+const Profile = mongoose.model('Profile', externSchema);
 
-export default extern;
+export default Profile;

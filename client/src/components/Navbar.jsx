@@ -1,13 +1,21 @@
-import { useNavigate } from 'react-router-dom'; 
-import { Navbar as NextUINavbar, NavbarBrand, NavbarContent, NavbarItem, Button, NavbarMenuToggle, NavbarMenu, NavbarMenuItem } from "@nextui-org/react";
-import { useState, useEffect } from 'react';
-import { auth } from '../services/firebaseConfig'; 
+import { useNavigate } from "react-router-dom";
+import {
+  Navbar as NextUINavbar,
+  NavbarBrand,
+  NavbarContent,
+  NavbarItem,
+  Button,
+  NavbarMenuToggle,
+  NavbarMenu,
+  NavbarMenuItem,
+} from "@nextui-org/react";
+import { useState, useEffect } from "react";
+import { auth } from "../services/firebaseConfig";
 
 function Navbar() {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -32,15 +40,12 @@ function Navbar() {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="sm:hidden"
         />
-        <NavbarBrand>
-          <Button
-            auto
-            flat
-            color="inherit"
-            onPress={() => navigate("/")} 
-          >
-            Mental Health Support
-          </Button>
+        <NavbarBrand
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={() => navigate("/")}
+        >
+          <img src="../../public/vite.png" alt="Logo" className="h-8 w-8" />
+          <span className="font-bold text-lg">SoulSync</span>
         </NavbarBrand>
       </NavbarContent>
 
@@ -52,7 +57,7 @@ function Navbar() {
                 auto
                 flat
                 color="gradient"
-                onPress={() => navigate(item.path)} 
+                onPress={() => navigate(item.path)}
               >
                 {item.name}
               </Button>
@@ -64,7 +69,7 @@ function Navbar() {
               auto
               flat
               color="primary"
-              onPress={() => navigate("/login")} 
+              onPress={() => navigate("/login")}
             >
               Login
             </Button>
@@ -82,7 +87,7 @@ function Navbar() {
                 color="gradient"
                 onPress={() => {
                   setIsMenuOpen(false);
-                  navigate(item.path); 
+                  navigate(item.path);
                 }}
               >
                 {item.name}
@@ -97,7 +102,7 @@ function Navbar() {
               color="primary"
               onPress={() => {
                 setIsMenuOpen(false);
-                navigate("/login"); 
+                navigate("/login");
               }}
             >
               Login

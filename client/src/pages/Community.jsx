@@ -7,7 +7,7 @@ import {
   Textarea,
   Avatar,
 } from "@nextui-org/react";
-import { postService } from "../services/api";
+import { postService } from "../services/postService";
 import { auth } from "../services/firebaseConfig";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";

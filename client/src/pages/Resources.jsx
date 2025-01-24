@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardBody, Button, Input, Textarea, Spinner, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@nextui-org/react";
-import { scheduleService } from '../services/api';
+import { scheduleService } from '../services/scheduleService';
 import { auth } from '../services/firebaseConfig';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
