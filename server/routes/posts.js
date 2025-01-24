@@ -1,6 +1,6 @@
 import express from "express";
 import Post from "../models/Post.js";
-
+import Chat from "../models/Chat.js"
 const router = express.Router();
 
 // Get all posts
