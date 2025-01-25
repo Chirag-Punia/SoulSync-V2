@@ -17,7 +17,7 @@ import {
   MessageSquare,
   Heart,
 } from "lucide-react";
-import { GoogleFitService } from "../services/GoogleFitService";
+import { GoogleFitService } from "../services/googleFitService";
 import { FitbitService } from "../services/fitbitService";
 import { toast } from "react-toastify";
 import ExerciseTimer from "./ExerciseTimer";
