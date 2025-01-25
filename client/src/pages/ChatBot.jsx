@@ -32,7 +32,7 @@ function ChatBot() {
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setNewMessage(transcript);
-        handleSendMessage(transcript);
+        sendMessageToAPI(transcript);
       };
 
       recognitionRef.current = recognition;
@@ -65,7 +65,7 @@ function ChatBot() {
     }
   };
 
-  const handleSendMessage = async (message = newMessage) => {
+  const sendMessageToAPI = async (message) => {
     if (!message.trim() || isLoading || !auth.currentUser) return;
 
     const userId = auth.currentUser.uid;
@@ -121,7 +121,7 @@ function ChatBot() {
 
       setTimeout(() => {
         if (newMessage.trim()) {
-          handleSendMessage(newMessage);
+          sendMessageToAPI(newMessage);
         }
       }, 500);
     } else {
@@ -183,20 +183,19 @@ function ChatBot() {
               }}
               placeholder="Type your message..."
               className="flex-grow"
-              disabled={isLoading || isTyping}
+              disabled={isLoading}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !isTyping) {
-                  handleSendMessage();
+                  sendMessageToAPI(newMessage);
                   setIsTyping(false);
                 }
               }}
             />
             <Button
-              onPress={handleSendMessage}
+              onPress={() => sendMessageToAPI(newMessage)}
               isLoading={isLoading}
               color="secondary"
               variant="shadow"
-              disabled={isTyping}
             >
               Send
             </Button>
@@ -204,7 +203,7 @@ function ChatBot() {
               onPress={startVoiceInput}
               color="primary"
               variant="shadow"
-              isDisabled={isRecording || isTyping}
+              isDisabled={isRecording}
             >
               {isRecording ? "Listening..." : "🎤 Speak"}
             </Button>
