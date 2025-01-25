@@ -26,7 +26,7 @@ function Navbar() {
   }, []);
 
   const menuItems = [
-    { name: "Dashboard", path: "/" },
+    { name: "Dashboard", path: "/dashboard" },
     { name: "Chat", path: "/chat" },
     { name: "Community", path: "/community" },
     { name: "Resources", path: "/resources" },
@@ -42,9 +42,9 @@ function Navbar() {
         />
         <NavbarBrand
           className="flex items-center gap-2 cursor-pointer"
-          onClick={() => navigate("/")}
+          onClick={() => navigate(isAuthenticated ? "/dashboard" : "/")}
         >
-          <img src="../../public/vite.png" alt="Logo" className="h-8 w-8" />
+          <img src="../vite.png" alt="Logo" className="h-8 w-8" />
           <span className="font-bold text-lg">SoulSync</span>
         </NavbarBrand>
       </NavbarContent>
@@ -68,7 +68,8 @@ function Navbar() {
             <Button
               auto
               flat
-              color="primary"
+              color="secondary"
+              variant="shadow"
               onPress={() => navigate("/login")}
             >
               Login
@@ -82,9 +83,9 @@ function Navbar() {
           menuItems.map((item, index) => (
             <NavbarMenuItem key={index}>
               <Button
-                auto
-                flat
-                color="gradient"
+                fullWidth
+                color="secondary"
+                variant="light"
                 onPress={() => {
                   setIsMenuOpen(false);
                   navigate(item.path);

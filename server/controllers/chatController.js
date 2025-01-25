@@ -47,7 +47,7 @@ export class ChatController {
   handleChat = async (req, res) => {
     try {
       const { userId } = req.params;
-      const { message } = req.body;
+      const  message  = req.body.message;
 
       if (!userId || !message) {
         return res

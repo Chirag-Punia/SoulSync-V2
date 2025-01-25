@@ -3,6 +3,7 @@ import { NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider } from "../src/context/ThemeContext";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
+import LandingPage from "./pages/LandingPage";
 import ChatBot from "./pages/ChatBot";
 import Community from "./pages/Community";
 import Resources from "./pages/Resources";
@@ -12,6 +13,7 @@ import Signup from "./pages/Signup";
 import PrivateRoute from "./components/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PublicRoute from "./components/PublicRoute";
 
 function App() {
   return (
@@ -23,12 +25,39 @@ function App() {
             <Navbar />
             <main className="container mx-auto px-4 py-8">
               <Routes>
-                {/* Public Route */}
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
+                <Route
+                  path="/"
+                  element={
+                    <PublicRoute>
+                      <LandingPage />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/signup"
+                  element={
+                    <PublicRoute>
+                      <Signup />
+                    </PublicRoute>
+                  }
+                />
 
-                {/* Protected Routes */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <PrivateRoute>
+                      <Dashboard />
+                    </PrivateRoute>
+                  }
+                />
                 <Route
                   path="/chat"
                   element={

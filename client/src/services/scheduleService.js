@@ -19,9 +19,13 @@ export const scheduleService = {
   addTask: async (userId, task) => {
     try {
       const token = await getAuthToken();
-      const response = await api.post(`/schedule`, { userId, task }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.post(
+        `/schedule`,
+        { userId, task },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to add task:", error);
@@ -32,9 +36,13 @@ export const scheduleService = {
   updateTask: async (userId, taskId, completed) => {
     try {
       const token = await getAuthToken();
-      const response = await api.patch(`/schedule/task`, { userId, taskId, completed }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.patch(
+        `/schedule/task`,
+        { userId, taskId, completed },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to update task:", error);

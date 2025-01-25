@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { auth } from "../services/firebaseConfig";
 import { Spinner } from "@nextui-org/react";
 
-function PrivateRoute({ children }) {
+function PublicRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ function PrivateRoute({ children }) {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
 }
 
-export default PrivateRoute;
+export default PublicRoute;

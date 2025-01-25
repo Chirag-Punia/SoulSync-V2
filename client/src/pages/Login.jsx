@@ -32,7 +32,7 @@ function Login() {
       const user = userCredential.user;
       await userService.loginUser(user);
       toast.success("Welcome back!");
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login Error:", error);
       toast.error("Unable to sign in. Please check your credentials.");
@@ -45,7 +45,7 @@ function Login() {
       const user = result.user;
       await userService.loginUser(user);
       toast.success("Welcome to Mental Health Support!");
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Google Login Error:", error);
       toast.error("Google sign in failed. Please try again.");
@@ -85,7 +85,8 @@ function Login() {
             />
 
             <Button
-              color="primary"
+              color="secondary"
+              variant="shadow"
               onPress={handleLogin}
               className="w-full font-semibold"
               size="lg"

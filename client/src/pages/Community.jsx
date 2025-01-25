@@ -102,11 +102,11 @@ function Community() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-6">
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">
         Community Support
       </h1>
 
-      <Card className="mb-6">
+      <Card className="mb-6 backdrop-blur-lg bg-white/10 dark:bg-black/10">
         <CardBody className="space-y-4">
           <Input
             label="Title"
@@ -122,7 +122,7 @@ function Community() {
               setNewPost({ ...newPost, content: e.target.value })
             }
           />
-          <Button color="primary" onPress={handleCreatePost}>
+          <Button color="secondary" variant="shadow" onPress={handleCreatePost}>
             Create Post
           </Button>
         </CardBody>
@@ -130,10 +130,16 @@ function Community() {
 
       <div className="space-y-4">
         {posts.map((post) => (
-          <Card key={post._id} className="overflow-visible">
+          <Card
+            key={post._id}
+            className="overflow-visible backdrop-blur-lg bg-white/10 dark:bg-black/10 hover:scale-[1.02] transition-transform duration-300"
+          >
             <CardBody className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Avatar name={post.userName} className="w-8 h-8" />
+                <Avatar
+                  name={post.userName}
+                  className="w-10 h-10 border-2 border-purple-500"
+                />
                 <div>
                   <p className="font-semibold">{post.userName}</p>
                   <p className="text-xs text-gray-500">

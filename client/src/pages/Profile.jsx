@@ -260,13 +260,17 @@ function Profile() {
                 >
                   Cancel
                 </Button>
-                <Button color="primary" onPress={handleSave}>
+                <Button color="secondary" variant="shadow" onPress={handleSave}>
                   Save Changes
                 </Button>
               </div>
             </div>
           ) : (
-            <Button color="primary" onPress={() => setIsEditing(true)}>
+            <Button
+              color="secondary"
+              variant="shadow"
+              onPress={() => setIsEditing(true)}
+            >
               Edit Profile
             </Button>
           )}
@@ -287,6 +291,8 @@ function Profile() {
               <Switch
                 isSelected={profile.isAnonymous}
                 onValueChange={toggleAnonymous}
+                color="secondary"
+                variant="shadow"
               />
             </div>
 
@@ -299,6 +305,8 @@ function Profile() {
               </div>
               <Switch
                 isSelected={profile.notifications}
+                color="secondary"
+                variant="shadow"
                 onChange={async (e) => {
                   const updatedValue = !profile.notifications;
                   setProfile((prev) => ({
@@ -316,6 +324,8 @@ function Profile() {
                 <p className="text-sm text-gray-500">Toggle dark theme</p>
               </div>
               <Switch
+                color="secondary"
+                variant="shadow"
                 isSelected={isDark}
                 onValueChange={async () => {
                   toggleTheme();
@@ -332,6 +342,8 @@ function Profile() {
                 </p>
               </div>
               <Switch
+                color="secondary"
+                variant="shadow"
                 isSelected={profile.shareData}
                 onChange={async (e) => {
                   const updatedValue = !profile.shareData;

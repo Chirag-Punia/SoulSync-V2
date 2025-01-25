@@ -5,9 +5,13 @@ export const chatService = {
   sendMessage: async (userId, message) => {
     try {
       const token = await getAuthToken();
-      const response = await api.post(`/chat/${userId}`, { message }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.post(
+        `/chat/${userId}`,
+        { message },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Chat error:", error);
@@ -32,9 +36,13 @@ export const chatService = {
     try {
       if (!message.text) return;
       const token = await getAuthToken();
-      const response = await api.post(`/chat/save/${userId}`, { message }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.post(
+        `/chat/save/${userId}`,
+        { message },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to save chat:", error);
@@ -45,9 +53,13 @@ export const chatService = {
   initializeChat: async (userId) => {
     try {
       const token = await getAuthToken();
-      const response = await api.post(`/chat/initialize/${userId}`, {}, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.post(
+        `/chat/initialize/${userId}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Failed to initialize chat:", error);

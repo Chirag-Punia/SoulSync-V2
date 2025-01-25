@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardBody, Input, Button } from "@nextui-org/react";
 import { chatService } from "../services/chatService";
 import { auth } from "../services/firebaseConfig";
@@ -12,7 +12,34 @@ function ChatBot() {
   const [isLoading, setIsLoading] = useState(false);
   const [typingMessage, setTypingMessage] = useState(null);
   const [loadingChats, setLoadingChats] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
+  const recognitionRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.continuous = false;
+
+      recognition.onstart = () => setIsRecording(true);
+      recognition.onend = () => setIsRecording(false);
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setNewMessage(transcript);
+        handleSendMessage(transcript);
+      };
+
+      recognitionRef.current = recognition;
+    } else {
+      console.error("Speech recognition not supported in this browser.");
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -38,13 +65,13 @@ function ChatBot() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || isLoading || !auth.currentUser) return;
+  const handleSendMessage = async (message = newMessage) => {
+    if (!message.trim() || isLoading || !auth.currentUser) return;
 
     const userId = auth.currentUser.uid;
     const userMessage = {
       _id: Date.now(),
-      text: newMessage,
+      text: message,
       sender: "user",
       timestamp: new Date(),
     };
@@ -52,9 +79,10 @@ function ChatBot() {
     setMessages((prev) => [...prev, userMessage]);
     setNewMessage("");
     setIsLoading(true);
+    setIsTyping(true);
 
     try {
-      const { response } = await chatService.sendMessage(userId, newMessage);
+      const { response } = await chatService.sendMessage(userId, message);
 
       if (response && typeof response === "string") {
         setTypingMessage(response);
@@ -71,6 +99,7 @@ function ChatBot() {
           setMessages((prev) => [...prev, botResponse]);
           chatService.saveChat(userId, [userMessage, botResponse]);
           setTypingMessage(null);
+          setIsTyping(false);
         }, typingDuration);
       } else {
         console.error("Invalid response format", response);
@@ -79,6 +108,24 @@ function ChatBot() {
       console.error("Failed to send message:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const startVoiceInput = () => {
+    if (isTyping) {
+      return;
+    }
+
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
+
+      setTimeout(() => {
+        if (newMessage.trim()) {
+          handleSendMessage(newMessage);
+        }
+      }, 500);
+    } else {
+      console.error("Speech recognition not initialized.");
     }
   };
 
@@ -102,8 +149,8 @@ function ChatBot() {
                   <div
                     className={`max-w-[70%] rounded-lg p-3 ${
                       message.sender === "user"
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 dark:bg-gray-700"
+                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                        : "bg-gray-100 dark:bg-gray-800 backdrop-blur-lg bg-white/10 dark:bg-black/10"
                     }`}
                   >
                     <div>{message.text}</div>
@@ -111,7 +158,7 @@ function ChatBot() {
                 </div>
               ))
             )}
-            {typingMessage && (
+            {typingMessage && !isRecording && (
               <div className="flex justify-start">
                 <div className="max-w-[70%] rounded-lg p-3 bg-gray-100 dark:bg-gray-700">
                   <Typewriter
@@ -130,17 +177,36 @@ function ChatBot() {
           <div className="flex gap-2">
             <Input
               value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                setIsTyping(true);
+              }}
               placeholder="Type your message..."
               className="flex-grow"
-              disabled={isLoading}
+              disabled={isLoading || isTyping}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isTyping) {
+                  handleSendMessage();
+                  setIsTyping(false);
+                }
+              }}
             />
             <Button
-              color="primary"
               onPress={handleSendMessage}
               isLoading={isLoading}
+              color="secondary"
+              variant="shadow"
+              disabled={isTyping}
             >
               Send
+            </Button>
+            <Button
+              onPress={startVoiceInput}
+              color="primary"
+              variant="shadow"
+              isDisabled={isRecording || isTyping}
+            >
+              {isRecording ? "Listening..." : "🎤 Speak"}
             </Button>
           </div>
         </CardBody>
