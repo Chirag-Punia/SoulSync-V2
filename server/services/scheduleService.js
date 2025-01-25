@@ -1,4 +1,4 @@
-import Schedule from '../models/Schedule.js';
+import Schedule from "../models/Schedule.js";
 
 export const getSchedule = async (userId, date) => {
   return await Schedule.findOne({ userId, date });
@@ -19,14 +19,14 @@ export const addTask = async (userId, task) => {
 
 export const updateTask = async (userId, taskId, updatedTask) => {
   return await Schedule.findOneAndUpdate(
-    { userId, 'tasks._id': taskId },
-    { 
-      $set: { 
-        'tasks.$.title': updatedTask.title,
-        'tasks.$.description': updatedTask.description,
-        'tasks.$.time': updatedTask.time,
-        'tasks.$.completed': updatedTask.completed
-      } 
+    { userId, "tasks._id": taskId },
+    {
+      $set: {
+        "tasks.$.title": updatedTask.title,
+        "tasks.$.description": updatedTask.description,
+        "tasks.$.time": updatedTask.time,
+        "tasks.$.completed": updatedTask.completed,
+      },
     },
     { new: true }
   );
@@ -42,8 +42,8 @@ export const deleteTask = async (userId, taskId) => {
 
 export const markTaskCompleted = async (userId, taskId, completed) => {
   return await Schedule.findOneAndUpdate(
-    { userId, 'tasks._id': taskId },
-    { $set: { 'tasks.$.completed': completed } },
+    { userId, "tasks._id": taskId },
+    { $set: { "tasks.$.completed": completed } },
     { new: true }
   );
 };

@@ -49,4 +49,17 @@ export const scheduleService = {
       throw error;
     }
   },
+  deleteTask: async (userId, taskId) => {
+    try {
+      const token = await getAuthToken();
+      const response = await api.delete(`/schedule/${taskId}`, {
+        params: { userId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+      throw error;
+    }
+  },
 };

@@ -1,4 +1,4 @@
-import * as ScheduleService from '../services/scheduleService.js';
+import * as ScheduleService from "../services/scheduleService.js";
 
 export const getSchedule = async (req, res) => {
   try {
@@ -25,7 +25,11 @@ export const updateTask = async (req, res) => {
   try {
     const { userId, updatedTask } = req.body;
     const taskId = req.params.taskId;
-    const schedule = await ScheduleService.updateTask(userId, taskId, updatedTask);
+    const schedule = await ScheduleService.updateTask(
+      userId,
+      taskId,
+      updatedTask
+    );
     res.json(schedule);
   } catch (err) {
     console.error("Error updating task:", err);
@@ -48,7 +52,11 @@ export const deleteTask = async (req, res) => {
 export const markTaskCompleted = async (req, res) => {
   try {
     const { userId, taskId, completed } = req.body;
-    const schedule = await ScheduleService.markTaskCompleted(userId, taskId, completed);
+    const schedule = await ScheduleService.markTaskCompleted(
+      userId,
+      taskId,
+      completed
+    );
     res.json(schedule);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -43,7 +43,10 @@ export const toggleAnonymous = async (req, res) => {
   try {
     const firebaseUid = req.user.user_id;
     const { isAnonymous } = req.body;
-    const updatedUser = await UserService.toggleAnonymous(firebaseUid, isAnonymous);
+    const updatedUser = await UserService.toggleAnonymous(
+      firebaseUid,
+      isAnonymous
+    );
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -63,8 +66,14 @@ export const updatePreferences = async (req, res) => {
   try {
     const { notifications, shareData, darkMode } = req.body;
     const firebaseUid = req.user.user_id;
-    await UserService.updatePreferences(firebaseUid, { notifications, shareData, darkMode });
-    return res.status(200).json({ message: "Preferences updated successfully" });
+    await UserService.updatePreferences(firebaseUid, {
+      notifications,
+      shareData,
+      darkMode,
+    });
+    return res
+      .status(200)
+      .json({ message: "Preferences updated successfully" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
@@ -80,7 +89,9 @@ export const connectAccount = async (req, res) => {
 
   try {
     await UserService.connectAccount(req.user.user_id, provider, status);
-    return res.status(200).json({ message: `${provider} account connection updated` });
+    return res
+      .status(200)
+      .json({ message: `${provider} account connection updated` });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });

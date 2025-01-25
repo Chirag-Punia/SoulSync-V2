@@ -17,7 +17,7 @@ import { auth } from "../services/firebaseConfig";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { CalendarIcon, PlusIcon, EditIcon, TrashIcon } from "lucide-react";
-
+import ChallengesTabs from "../components/ChallengesTabs";
 const resourceCategories = [
   {
     id: 1,
@@ -100,7 +100,7 @@ function Resources() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [userId, setUserId] = useState(null);
-
+  const [isChallengesExpanded, setIsChallengesExpanded] = useState(false);
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -154,15 +154,6 @@ function Resources() {
     } catch (error) {
       console.error("Error adding/updating task:", error);
     }
-  };
-
-  const handleEditTask = (task) => {
-    setEditingTask(task);
-    setTaskTitle(task.title);
-    setTaskDescription(task.description);
-    setTaskDate(new Date(task.date));
-    setTaskTime(task.time);
-    setIsModalOpen(true);
   };
 
   const handleCompleteTask = async (taskId) => {
@@ -274,6 +265,29 @@ function Resources() {
         <CardBody>
           <div
             className="flex justify-between items-center cursor-pointer"
+            onClick={() => setIsChallengesExpanded(!isChallengesExpanded)}
+          >
+            <h2 className="text-3xl font-semibold">Wellness Challenges</h2>
+            <Button
+              auto
+              light
+              onPress={() => setIsChallengesExpanded(!isChallengesExpanded)}
+            >
+              {isChallengesExpanded ? "Collapse" : "Explore Challenges"}
+            </Button>
+          </div>
+          {isChallengesExpanded && (
+            <div className="mt-4">
+              <ChallengesTabs />
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      <Card className="mt-8 bg-gradient-to-br from-tertiary-100 to-tertiary-200 dark:from-tertiary-700 dark:to-tertiary-800">
+        <CardBody>
+          <div
+            className="flex justify-between items-center cursor-pointer"
             onClick={() => setIsScheduleExpanded(!isScheduleExpanded)}
           >
             <h2 className="text-3xl font-semibold">Your Daily Schedule</h2>
@@ -347,15 +361,6 @@ function Resources() {
                                   : "Mark as Completed"}
                               </Button>
                               <Button
-                                isDisabled
-                                color="primary"
-                                auto
-                                onPress={() => handleEditTask(task)}
-                              >
-                                <EditIcon />
-                              </Button>
-                              <Button
-                                isDisabled
                                 color="error"
                                 auto
                                 onPress={() => handleDeleteTask(task._id)}

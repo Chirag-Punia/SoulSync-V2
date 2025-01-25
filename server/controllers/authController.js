@@ -11,10 +11,10 @@ export const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Error saving user:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: "Error saving user details", 
-      error 
+    res.status(500).json({
+      success: false,
+      message: "Error saving user details",
+      error,
     });
   }
 };
@@ -32,9 +32,9 @@ export const createOrUpdateProfile = async (req, res) => {
   try {
     const { firebaseUid, email, displayName, ...userData } = req.body;
     const user = await AuthService.createOrUpdateProfile(
-      firebaseUid, 
-      email, 
-      displayName, 
+      firebaseUid,
+      email,
+      displayName,
       userData
     );
     res.status(201).json(user);
@@ -46,7 +46,7 @@ export const createOrUpdateProfile = async (req, res) => {
 export const updateUserPreferences = async (req, res) => {
   try {
     const user = await AuthService.updateUserPreferences(
-      req.params.firebaseUid, 
+      req.params.firebaseUid,
       req.body
     );
     res.json(user);

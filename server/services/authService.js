@@ -2,7 +2,7 @@ import User from "../models/User.js";
 
 export const loginUser = async (firebaseUid, email, displayName) => {
   let user = await User.findOne({ firebaseUid });
-  
+
   if (user) {
     user.email = email;
     user.displayName = displayName || user.displayName;
@@ -14,25 +14,30 @@ export const loginUser = async (firebaseUid, email, displayName) => {
       displayName,
     });
   }
-  
+
   return await user.save();
 };
 
 export const getUserProfile = async (firebaseUid) => {
   const user = await User.findOne({ firebaseUid });
-  
+
   if (!user) {
     const error = new Error("User not found");
     error.status = 404;
     throw error;
   }
-  
+
   return user;
 };
 
-export const createOrUpdateProfile = async (firebaseUid, email, displayName, userData) => {
+export const createOrUpdateProfile = async (
+  firebaseUid,
+  email,
+  displayName,
+  userData
+) => {
   let user = await User.findOne({ firebaseUid });
-  
+
   if (user) {
     user = await User.findOneAndUpdate(
       { firebaseUid },
@@ -53,7 +58,7 @@ export const createOrUpdateProfile = async (firebaseUid, email, displayName, use
     });
     await user.save();
   }
-  
+
   return user;
 };
 
@@ -66,24 +71,24 @@ export const updateUserPreferences = async (firebaseUid, preferences) => {
     },
     { new: true }
   );
-  
+
   if (!user) {
     const error = new Error("User not found");
     error.status = 404;
     throw error;
   }
-  
+
   return user;
 };
 
 export const deleteUser = async (firebaseUid) => {
   const user = await User.findOneAndDelete({ firebaseUid });
-  
+
   if (!user) {
     const error = new Error("User not found");
     error.status = 404;
     throw error;
   }
-  
+
   return user;
 };
