@@ -3,6 +3,9 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema({
   firebaseUid: { type: String, required: true, unique: true },
   displayName: { type: String, required: true },
+  googleFitAccessToken: { type: String },
+  googleFitRefreshToken: { type: String },
+  fitbitAccessToken: { type: String },
   email: { type: String, required: true, unique: true },
   isAnonymous: { type: Boolean, default: false },
   preferences: {

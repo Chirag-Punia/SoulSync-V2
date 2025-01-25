@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardBody } from "@nextui-org/react";
+import { Card, CardBody, Button } from "@nextui-org/react";
 import {
   LineChart,
   Line,
@@ -15,8 +15,13 @@ import {
   Brain,
   Calendar,
   MessageSquare,
+  Heart,
 } from "lucide-react";
+import { GoogleFitService } from "../services/GoogleFitService";
+import { FitbitService } from "../services/FitbitService";
+import { toast } from "react-toastify";
 import ExerciseTimer from "./ExerciseTimer";
+import { getAuth } from "firebase/auth";
 
 // Sample mood data
 const sampleMoodData = [
@@ -26,24 +31,134 @@ const sampleMoodData = [
   { date: "2024-02-04", mood: 5 },
   { date: "2024-02-05", mood: 9 },
 ];
+const HealthPlatformCard = ({
+  platform,
+  description,
+  color,
+  onClick,
+  isConnected,
+}) => (
+  <Card
+    shadow="sm"
+    isPressable
+    css={{
+      height: "100%",
+      ...(isConnected && { pointerEvents: "none", opacity: 0.5 }),
+    }}
+  >
+    <CardBody className="flex flex-col items-center justify-between p-6">
+      <div
+        onClick={!isConnected ? onClick : undefined}
+        className={`w-full mb-4 px-4 py-2 text-white rounded-md ${
+          isConnected
+            ? platform === "Google Fit"
+              ? "bg-green-600"
+              : platform === "Apple Health"
+              ? "bg-gray-800"
+              : platform === "Fitbit"
+              ? "bg-blue-600"
+              : "bg-blue-500"
+            : "bg-gray-500 hover:bg-gray-600"
+        } ${isConnected ? "cursor-not-allowed" : "hover:bg-opacity-90"}`}
+      >
+        {isConnected ? `Connected to ${platform}` : `Connect to ${platform}`}
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
+        {description}
+      </p>
+    </CardBody>
+  </Card>
+);
 
 function Dashboard() {
   const [moodData, setMoodData] = useState(sampleMoodData);
   const [stressLevel, setStressLevel] = useState(4);
+  const [user, setUser] = useState();
   const [currentMood, setCurrentMood] = useState(5);
   const [weeklyGoalProgress, setWeeklyGoalProgress] = useState(60);
   const [showExerciseTimer, setShowExerciseTimer] = useState(false);
-
+  const [isGoogleFitConnected, setIsGoogleFitConnected] = useState(false);
+  const [isAppleHealthConnected, setIsAppleHealthConnected] = useState(false);
+  const [isFitbitConnected, setIsFitbitConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const fetchMoodData = async () => {
+    const initializeDashboard = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error("No authenticated user");
+        return;
+      }
+
       try {
+        const userInfoResponse = await fetch(
+          `${import.meta.env.VITE_API_BASE_UR}/users/`,
+          {
+            headers: {
+              Authorization: `Bearer ${await user.getIdToken()}`,
+            },
+          }
+        );
+        if (userInfoResponse.ok) {
+          const userInfo = await userInfoResponse.json();
+          setUser(userInfo);
+          setLoading(false);
+        }
+
+        const userResponse = await GoogleFitService.getUserData();
+        const userData = userResponse;
+        setMoodData(userData.moodData || sampleMoodData);
+        setStressLevel(userData.stressLevel || 4);
+        setWeeklyGoalProgress(userData.weeklyGoalProgress || 0);
+
+        if (userData.googleFitAccessToken) {
+          setIsGoogleFitConnected(true);
+        }
+        const fitbitResponse = await FitbitService.fetchFitbitData();
+        if (fitbitResponse.user) {
+          setIsFitbitConnected(true);
+        }
       } catch (error) {
-        console.error("Failed to fetch mood data:", error);
+        console.error("Error initializing dashboard:", error.message);
       }
     };
 
-    fetchMoodData();
+    initializeDashboard();
   }, []);
+
+  const connectToGoogleFit = async () => {
+    try {
+      const authUrl = await GoogleFitService.getOAuthUrl();
+      window.location.href = authUrl;
+
+      await GoogleFitService.fetchGoogleFitData();
+      setIsGoogleFitConnected(true);
+      toast.success("Connected with Google Fit");
+    } catch (error) {
+      console.error("Error connecting to Google Fit:", error.message);
+      toast.error("Failed to connect to Google Fit");
+    }
+  };
+
+  const connectToAppleHealth = () => {
+    alert("Apple Health integration requires iOS app development.");
+    setIsAppleHealthConnected(true);
+  };
+
+  const connectToFitbit = async () => {
+    try {
+      const authUrl = await FitbitService.getOAuthUrl();
+      window.location.href = authUrl;
+
+      await FitbitService.fetchFitbitData();
+      setIsFitbitConnected(true);
+      toast.success("Fitbit data fetched and saved");
+    } catch (error) {
+      console.error("Error connecting to Fitbit:", error);
+      toast.error("Failed to connect to Fitbit");
+    }
+  };
 
   const handleMoodInput = (event) => {
     setCurrentMood(parseInt(event.target.value, 10));
@@ -56,9 +171,38 @@ function Dashboard() {
   return (
     <div className="space-y-6 p-6 bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 min-h-screen">
       <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
-        Welcome Back, Sarah!
+        Welcome Back, {!loading ? user.displayName : "User"}!
       </h1>
-
+      <Card>
+        <CardBody className="p-8">
+          <h3 className="flex items-center justify-center mb-8 text-2xl font-semibold text-purple-600">
+            <Heart className="mr-2" /> Connect to Health Platforms
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <HealthPlatformCard
+              platform="Google Fit"
+              description="Sync your activity and health data from Google Fit."
+              color="success"
+              onClick={connectToGoogleFit}
+              isConnected={isGoogleFitConnected}
+            />
+            <HealthPlatformCard
+              platform="Apple Health"
+              description="Sync your health data from your iPhone."
+              color="default"
+              onClick={connectToAppleHealth}
+              isConnected={isAppleHealthConnected}
+            />
+            <HealthPlatformCard
+              platform="Fitbit"
+              description="Sync your activity and exercise data from Fitbit."
+              color="primary"
+              onClick={connectToFitbit}
+              isConnected={isFitbitConnected}
+            />
+          </div>
+        </CardBody>
+      </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardBody>

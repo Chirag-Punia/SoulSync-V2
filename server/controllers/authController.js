@@ -27,6 +27,14 @@ export const getUserProfile = async (req, res) => {
     res.status(error.status || 500).json({ message: error.message });
   }
 };
+export const getUserProfile2 = async (req, res) => {
+  try {
+    const user = await AuthService.getUserProfile(req.user.user_id);
+    res.json(user);
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.message });
+  }
+};
 
 export const createOrUpdateProfile = async (req, res) => {
   try {
