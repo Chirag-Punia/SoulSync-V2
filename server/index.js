@@ -8,7 +8,7 @@ import userRoutes from "./routes/users.js";
 import scheduleRoutes from "./routes/schedule.js";
 import profileRoutes from "./routes/profile.js";
 import { authenticateUser } from "./middleware/firebaseAuthMiddleware.js";
-import fitbitRoutes from "./routes/fitbitRoutes.js";
+import fitbitRoutes from "./routes/fitBitRoutes.js";
 import googleFitRoutes from "./routes/googleFitRoutes.js";
 
 dotenv.config();

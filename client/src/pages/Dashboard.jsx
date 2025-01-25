@@ -18,7 +18,7 @@ import {
   Heart,
 } from "lucide-react";
 import { GoogleFitService } from "../services/GoogleFitService";
-import { FitbitService } from "../services/FitbitService";
+import { FitbitService } from "../services/fitbitService";
 import { toast } from "react-toastify";
 import ExerciseTimer from "./ExerciseTimer";
 import { getAuth } from "firebase/auth";
