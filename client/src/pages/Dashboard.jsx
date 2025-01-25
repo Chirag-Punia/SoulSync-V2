@@ -34,32 +34,31 @@ const sampleMoodData = [
 const HealthPlatformCard = ({
   platform,
   description,
-  color,
   onClick,
   isConnected,
 }) => (
   <Card
-    shadow="sm"
     isPressable
-    css={{
-      height: "100%",
-      ...(isConnected && { pointerEvents: "none", opacity: 0.5 }),
-    }}
+    onPress={!isConnected ? onClick : undefined}
+    className={`h-full ${isConnected ? "opacity-50 cursor-not-allowed" : ""}`}
   >
     <CardBody className="flex flex-col items-center justify-between p-6">
       <div
-        onClick={!isConnected ? onClick : undefined}
-        className={`w-full mb-4 px-4 py-2 text-white rounded-md ${
-          isConnected
-            ? platform === "Google Fit"
-              ? "bg-green-600"
-              : platform === "Apple Health"
-              ? "bg-gray-800"
-              : platform === "Fitbit"
-              ? "bg-blue-600"
-              : "bg-blue-500"
-            : "bg-gray-500 hover:bg-gray-600"
-        } ${isConnected ? "cursor-not-allowed" : "hover:bg-opacity-90"}`}
+        className={`
+          w-full mb-4 px-4 py-2 text-white rounded-md text-center
+          ${
+            isConnected
+              ? platform === "Google Fit"
+                ? "bg-green-600"
+                : platform === "Apple Health"
+                ? "bg-gray-800"
+                : platform === "Fitbit"
+                ? "bg-blue-600"
+                : "bg-blue-500"
+              : "bg-purple-500 hover:bg-purple-600"
+          }
+          ${isConnected ? "cursor-not-allowed" : "cursor-pointer"}
+        `}
       >
         {isConnected ? `Connected to ${platform}` : `Connect to ${platform}`}
       </div>
@@ -93,7 +92,7 @@ function Dashboard() {
 
       try {
         const userInfoResponse = await fetch(
-          `${import.meta.env.VITE_API_BASE_UR}/users/`,
+          `${import.meta.env.VITE_API_BASE_URL}/users/`,
           {
             headers: {
               Authorization: `Bearer ${await user.getIdToken()}`,
@@ -101,6 +100,7 @@ function Dashboard() {
           }
         );
         if (userInfoResponse.ok) {
+          console.log(userInfoResponse);
           const userInfo = await userInfoResponse.json();
           setUser(userInfo);
           setLoading(false);
