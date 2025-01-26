@@ -5,11 +5,28 @@ import {
   Button,
   Avatar,
   Switch,
+  Divider,
 } from "@nextui-org/react";
 import { toast } from "react-toastify";
-import { useState, useEffect, use } from "react";
+import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate } from "react-router-dom";
+import {
+  FaGoogle,
+  FaFacebook,
+  FaTwitter,
+  FaMoon,
+  FaBell,
+  FaUserSecret,
+  FaShareAlt,
+  FaSignOutAlt,
+  FaTrash,
+  FaFileExport,
+  FaKey,
+  FaEdit,
+} from "react-icons/fa";
+import { getAuth, signInWithPopup } from "firebase/auth";
 import {
   auth,
   googleProvider,
@@ -41,13 +58,17 @@ function Profile() {
     const fetchProfileData = async () => {
       try {
         const userData = await userService.getUserProfileData();
+        setPreferences({
+          isAnonymous: userData.isAnonymous || false,
+          notifications: userData.preferences?.notifications || false,
+          darkMode: isDark,
+          shareData: userData.preferences?.shareData || false,
+        });
+
         setProfile((prevProfile) => ({
           ...prevProfile,
           name: userData.displayName || prevProfile.name,
           email: userData.email || prevProfile.email,
-          notifications: userData.preferences?.notifications ?? false,
-          shareData: userData.preferences?.shareData ?? false,
-          isAnonymous: userData.isAnonymous,
           connectedAccounts: {
             google: userData.connectedAccounts?.google || false,
             facebook: userData.connectedAccounts?.facebook || false,
@@ -56,56 +77,30 @@ function Profile() {
         }));
       } catch (error) {
         console.error("Profile fetch error:", error);
+        toast.error("Failed to load profile data");
       }
     };
 
     fetchProfileData();
-  }, []);
+  }, [isDark]);
   const handleUpdatePreferences = async (field) => {
-    let updatedPreferences;
-
-    switch (field) {
-      case "notifications":
-        updatedPreferences = {
-          notifications: !profile.notifications,
-          shareData: profile.shareData,
-          darkMode: isDark,
-        };
-        break;
-      case "shareData":
-        updatedPreferences = {
-          notifications: profile.notifications,
-          shareData: !profile.shareData,
-          darkMode: isDark,
-        };
-        break;
-      case "darkMode":
-        updatedPreferences = {
-          notifications: profile.notifications,
-          shareData: profile.shareData,
-          darkMode: !isDark,
-        };
-        break;
-      default:
-        return;
-    }
-
     try {
+      const updatedPreferences = {
+        ...preferences,
+        [field]: field === "darkMode" ? !isDark : !preferences[field],
+      };
+      console.log(updatedPreferences);
       await userService.updatePreferences(updatedPreferences);
+
+      if (field !== "darkMode") {
+        setPreferences(updatedPreferences);
+      }
+
+      return true;
     } catch (error) {
       console.error("Error updating preferences:", error);
+      throw error;
     }
-  };
-  const getAccountButtonStyle = (account) => {
-    const buttonStyles = {
-      google:
-        "bg-red-500 text-white hover:bg-red-600 focus:ring-4 focus:ring-red-300",
-      facebook:
-        "bg-blue-600 text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-300",
-      twitter:
-        "bg-sky-400 text-white hover:bg-sky-500 focus:ring-4 focus:ring-sky-300",
-    };
-    return buttonStyles[account];
   };
   const handleResetPassword = async () => {
     try {
@@ -185,27 +180,26 @@ function Profile() {
   };
 
   const handleConnectAccount = async (provider) => {
-    const auth = getAuth();
-    let selectedProvider;
-
-    switch (provider) {
-      case "google":
-        selectedProvider = googleProvider;
-        break;
-      case "facebook":
-        selectedProvider = facebookProvider;
-        break;
-      case "twitter":
-        selectedProvider = twitterProvider;
-        break;
-      default:
-        return;
-    }
-
     try {
-      const result = await signInWithPopup(auth, selectedProvider);
-      const user = result.user;
+      setIsLoading(true);
+      const auth = getAuth();
+      let selectedProvider;
 
+      switch (provider) {
+        case "google":
+          selectedProvider = googleProvider;
+          break;
+        case "facebook":
+          selectedProvider = facebookProvider;
+          break;
+        case "twitter":
+          selectedProvider = twitterProvider;
+          break;
+        default:
+          return;
+      }
+
+      const result = await signInWithPopup(auth, selectedProvider);
       await userService.connectAccount(provider);
 
       setProfile((prev) => ({
@@ -215,230 +209,364 @@ function Profile() {
           [provider]: true,
         },
       }));
+
+      toast.success(`Successfully connected ${provider} account`);
     } catch (error) {
-      console.error("Error during social login:", error);
+      console.error("Error connecting account:", error);
+      toast.error(`Failed to connect ${provider} account`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+  const [preferences, setPreferences] = useState({
+    isAnonymous: false,
+    notifications: false,
+    darkMode: isDark,
+    shareData: false,
+  });
+
+  const [currentUser] = useState("Chirag-Punia");
+  const [currentDateTime, setCurrentDateTime] = useState("2025-01-26 17:29:37");
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+    },
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-8">
-        Profile Settings
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#0F172A] to-[#1E293B] p-6 md:p-8">
+      <motion.div
+        className="max-w-4xl mx-auto space-y-6"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.h1
+          className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-8"
+          variants={itemVariants}
+        >
+          Profile Settings
+        </motion.h1>
 
-      <Card className="mb-6">
-        <CardBody className="space-y-6">
-          <div className="flex items-center space-x-4">
-            <Avatar src="https://i.pravatar.cc/150" className="w-24 h-24" />
-            <div>
-              <h2 className="text-2xl font-semibold">{profile.name}</h2>
-              <p className="text-gray-500">{profile.email}</p>
-            </div>
-          </div>
+        {/* Profile Card */}
+        <motion.div variants={itemVariants}>
+          <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
+            <CardBody className="space-y-6">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="relative group">
+                  <Avatar
+                    src="https://i.pravatar.cc/150"
+                    className="w-32 h-32 text-large ring-4 ring-purple-500/50 group-hover:ring-purple-500 transition-all duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Button
+                      isIconOnly
+                      className="bg-purple-500/80 text-white"
+                      size="sm"
+                    >
+                      <FaEdit />
+                    </Button>
+                  </div>
+                </div>
+                <div className="text-center md:text-left">
+                  <h2 className="text-2xl font-semibold text-white mb-2">
+                    {profile.name}
+                  </h2>
+                  <p className="text-gray-400">{profile.email}</p>
+                  {!isEditing && (
+                    <Button
+                      className="mt-4 bg-gradient-to-r from-purple-600 to-pink-600"
+                      variant="shadow"
+                      onPress={() => setIsEditing(true)}
+                      startContent={<FaEdit />}
+                    >
+                      Edit Profile
+                    </Button>
+                  )}
+                </div>
+              </div>
 
-          {isEditing ? (
-            <div className="space-y-4">
-              <Input
-                label="Name"
-                value={profile.name}
-                onChange={(e) =>
-                  setProfile({ ...profile, name: e.target.value })
-                }
-              />
-              <Input
-                label="Email"
-                value={profile.email}
-                onChange={(e) =>
-                  setProfile({ ...profile, email: e.target.value })
-                }
-              />
-              <div className="flex justify-end space-x-2">
-                <Button
-                  color="danger"
-                  variant="light"
-                  onPress={() => setIsEditing(false)}
+              {isEditing && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="space-y-4"
                 >
-                  Cancel
-                </Button>
-                <Button color="secondary" variant="shadow" onPress={handleSave}>
-                  Save Changes
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              color="secondary"
-              variant="shadow"
-              onPress={() => setIsEditing(true)}
-            >
-              Edit Profile
-            </Button>
-          )}
-        </CardBody>
-      </Card>
-
-      <Card className="mb-6">
-        <CardBody>
-          <h3 className="text-xl font-semibold mb-4">Preferences</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="font-semibold">Stay Anonymous</p>
-                <p className="text-sm text-gray-500">
-                  Hide your name in community posts
-                </p>
-              </div>
-              <Switch
-                isSelected={profile.isAnonymous}
-                onValueChange={toggleAnonymous}
-                color="secondary"
-                variant="shadow"
-              />
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="font-semibold">Notifications</p>
-                <p className="text-sm text-gray-500">
-                  Receive alerts and reminders
-                </p>
-              </div>
-              <Switch
-                isSelected={profile.notifications}
-                color="secondary"
-                variant="shadow"
-                onChange={async (e) => {
-                  const updatedValue = !profile.notifications;
-                  setProfile((prev) => ({
-                    ...prev,
-                    notifications: updatedValue,
-                  }));
-                  await handleUpdatePreferences("notifications");
-                }}
-              />
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="font-semibold">Dark Mode</p>
-                <p className="text-sm text-gray-500">Toggle dark theme</p>
-              </div>
-              <Switch
-                color="secondary"
-                variant="shadow"
-                isSelected={isDark}
-                onValueChange={async () => {
-                  toggleTheme();
-                  await handleUpdatePreferences("darkMode");
-                }}
-              />
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="font-semibold">Share Anonymous Data</p>
-                <p className="text-sm text-gray-500">
-                  Help improve our services
-                </p>
-              </div>
-              <Switch
-                color="secondary"
-                variant="shadow"
-                isSelected={profile.shareData}
-                onChange={async (e) => {
-                  const updatedValue = !profile.shareData;
-                  setProfile((prev) => ({
-                    ...prev,
-                    shareData: updatedValue,
-                  }));
-                  await handleUpdatePreferences("shareData");
-                }}
-              />
-            </div>
-          </div>
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardBody>
-          <h3 className="text-xl font-semibold mb-4">Connected Accounts</h3>
-          <div className="space-y-4">
-            {["google", "facebook", "twitter"].map((account) => (
-              <div
-                key={account}
-                className="flex justify-between items-center p-4 rounded-lg shadow-md"
-              >
-                <p className="font-semibold capitalize">{account}</p>
-                <Button
-                  color={
-                    profile.connectedAccounts[account] ? "success" : "primary"
-                  }
-                  onPress={(e) => {
-                    if (profile.connectedAccounts[account]) {
-                      e.preventDefault();
-                      return;
+                  <Input
+                    label="Name"
+                    value={profile.name}
+                    onChange={(e) =>
+                      setProfile({ ...profile, name: e.target.value })
                     }
-                    handleConnectAccount(account);
-                  }}
-                  disabled={profile.connectedAccounts[account]}
-                  className={`ml-4 ${getAccountButtonStyle(account)} ${
-                    profile.connectedAccounts[account]
-                      ? "cursor-not-allowed opacity-50"
-                      : ""
-                  }`}
-                >
-                  {profile.connectedAccounts[account]
-                    ? "Connected"
-                    : `Connect ${account}`}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardBody>
-      </Card>
+                    classNames={{
+                      input: "text-white",
+                      label: "text-gray-400",
+                    }}
+                  />
+                  <Input
+                    label="Email"
+                    value={profile.email}
+                    onChange={(e) =>
+                      setProfile({ ...profile, email: e.target.value })
+                    }
+                    classNames={{
+                      input: "text-white",
+                      label: "text-gray-400",
+                    }}
+                  />
+                  <div className="flex justify-end space-x-2">
+                    <Button
+                      color="danger"
+                      variant="light"
+                      onPress={() => setIsEditing(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      className="bg-gradient-to-r from-purple-600 to-pink-600"
+                      variant="shadow"
+                      onPress={handleSave}
+                    >
+                      Save Changes
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </CardBody>
+          </Card>
+        </motion.div>
 
-      <Card>
-        <CardBody>
-          <h3 className="text-xl font-semibold mb-4">Privacy & Security</h3>
-          <div className="space-y-4">
-            <Button
-              onPress={() => {
-                signOut(auth);
-                navigator("/");
-              }}
-              variant="light"
-              className="w-full"
-            >
-              Log Out
-            </Button>
-            <Button
-              color="danger"
-              variant="light"
-              className="w-full"
-              onPress={handleDeleteAccount}
-              isLoading={isLoading}
-            >
-              Delete Account
-            </Button>
-            <Button
-              color="primary"
-              variant="light"
-              className="w-full"
-              onPress={handleExportData}
-            >
-              Export My Data
-            </Button>
-            <Button
-              color="warning"
-              variant="light"
-              className="w-full"
-              onPress={handleResetPassword}
-            >
-              Reset Password
-            </Button>
-          </div>
-        </CardBody>
-      </Card>
+        {/* Preferences Card */}
+        {/* Preferences Card */}
+        <motion.div variants={itemVariants}>
+          <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
+            <CardBody>
+              <h3 className="text-xl font-semibold mb-6 text-white">
+                Preferences
+              </h3>
+              <div className="space-y-6">
+                {[
+                  {
+                    title: "Stay Anonymous",
+                    description: "Hide your name in community posts",
+                    icon: <FaUserSecret />,
+                    key: "isAnonymous",
+                    isSelected: preferences.isAnonymous,
+                    onChange: async () => {
+                      try {
+                        setPreferences((prev) => ({
+                          ...prev,
+                          isAnonymous: !prev.isAnonymous,
+                        }));
+                        await toggleAnonymous(!preferences.isAnonymous);
+                        toast.success("Anonymous mode updated");
+                      } catch (error) {
+                        setPreferences((prev) => ({
+                          ...prev,
+                          isAnonymous: !prev.isAnonymous,
+                        }));
+                        toast.error("Failed to update anonymous mode");
+                      }
+                    },
+                  },
+                  {
+                    title: "Notifications",
+                    description: "Receive alerts and reminders",
+                    icon: <FaBell />,
+                    key: "notifications",
+                    isSelected: preferences.notifications,
+                    onChange: async () => {
+                      try {
+                        setPreferences((prev) => ({
+                          ...prev,
+                          notifications: !prev.notifications,
+                        }));
+                        await handleUpdatePreferences("notifications");
+                        toast.success("Notification preferences updated");
+                      } catch (error) {
+                        setPreferences((prev) => ({
+                          ...prev,
+                          notifications: !prev.notifications,
+                        }));
+                        toast.error(
+                          "Failed to update notification preferences"
+                        );
+                      }
+                    },
+                  },
+                  {
+                    title: "Share Anonymous Data",
+                    description: "Help improve our services",
+                    icon: <FaShareAlt />,
+                    key: "shareData",
+                    isSelected: preferences.shareData,
+                    onChange: async () => {
+                      try {
+                        setPreferences((prev) => ({
+                          ...prev,
+                          shareData: !prev.shareData,
+                        }));
+                        await handleUpdatePreferences("shareData");
+                        toast.success("Data sharing preference updated");
+                      } catch (error) {
+                        setPreferences((prev) => ({
+                          ...prev,
+                          shareData: !prev.shareData,
+                        }));
+                        toast.error("Failed to update data sharing preference");
+                      }
+                    },
+                  },
+                ].map((pref) => (
+                  <div
+                    key={pref.key}
+                    className="flex items-center justify-between p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="text-purple-400 text-xl">{pref.icon}</div>
+                      <div>
+                        <p className="font-semibold text-white">{pref.title}</p>
+                        <p className="text-sm text-gray-400">
+                          {pref.description}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      isSelected={pref.isSelected}
+                      onValueChange={pref.onChange}
+                      classNames={{
+                        wrapper: "group-data-[selected=true]:bg-purple-500",
+                      }}
+                      size="lg"
+                      color="secondary"
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+        </motion.div>
+
+        {/* Connected Accounts Card */}
+        <motion.div variants={itemVariants}>
+          <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
+            <CardBody>
+              <h3 className="text-xl font-semibold mb-6 text-white">
+                Connected Accounts
+              </h3>
+              <div className="space-y-4">
+                {[
+                  {
+                    name: "google",
+                    icon: <FaGoogle />,
+                    color: "from-red-500 to-yellow-500",
+                  },
+                  {
+                    name: "facebook",
+                    icon: <FaFacebook />,
+                    color: "from-blue-500 to-blue-700",
+                  },
+                  {
+                    name: "twitter",
+                    icon: <FaTwitter />,
+                    color: "from-blue-400 to-cyan-400",
+                  },
+                ].map((account) => (
+                  <div
+                    key={account.name}
+                    className="flex justify-between items-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="text-2xl text-white">{account.icon}</div>
+                      <p className="font-semibold text-white capitalize">
+                        {account.name}
+                      </p>
+                    </div>
+                    <Button
+                      className={`bg-gradient-to-r ${account.color} ${
+                        profile.connectedAccounts[account.name]
+                          ? "opacity-50"
+                          : ""
+                      }`}
+                      onPress={() => handleConnectAccount(account.name)}
+                      disabled={profile.connectedAccounts[account.name]}
+                    >
+                      {profile.connectedAccounts[account.name]
+                        ? "Connected"
+                        : `Connect ${account.name}`}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+        </motion.div>
+
+        {/* Privacy & Security Card */}
+        <motion.div variants={itemVariants}>
+          <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
+            <CardBody>
+              <h3 className="text-xl font-semibold mb-6 text-white">
+                Privacy & Security
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  {
+                    label: "Log Out",
+                    icon: <FaSignOutAlt />,
+                    onClick: () => {
+                      signOut(auth);
+                      navigator("/");
+                    },
+                    class: "bg-gradient-to-r from-gray-600 to-gray-700",
+                  },
+                  {
+                    label: "Delete Account",
+                    icon: <FaTrash />,
+                    onClick: handleDeleteAccount,
+                    class: "bg-gradient-to-r from-red-600 to-red-700",
+                  },
+                  {
+                    label: "Export My Data",
+                    icon: <FaFileExport />,
+                    onClick: handleExportData,
+                    class: "bg-gradient-to-r from-green-600 to-teal-600",
+                  },
+                  {
+                    label: "Reset Password",
+                    icon: <FaKey />,
+                    onClick: handleResetPassword,
+                    class: "bg-gradient-to-r from-yellow-600 to-orange-600",
+                  },
+                ].map((action, index) => (
+                  <Button
+                    key={index}
+                    className={`${action.class} text-white`}
+                    startContent={action.icon}
+                    onPress={action.onClick}
+                    size="lg"
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
+            </CardBody>
+          </Card>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

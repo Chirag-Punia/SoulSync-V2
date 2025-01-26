@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardBody, Button } from "@nextui-org/react";
+import { Card, CardBody, Progress, Button, Divider } from "@nextui-org/react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router";
 import {
   LineChart,
   Line,
@@ -31,43 +33,6 @@ const sampleMoodData = [
   { date: "2024-02-04", mood: 5 },
   { date: "2024-02-05", mood: 9 },
 ];
-const HealthPlatformCard = ({
-  platform,
-  description,
-  onClick,
-  isConnected,
-}) => (
-  <Card
-    isPressable
-    onPress={!isConnected ? onClick : undefined}
-    className={`h-full ${isConnected ? "opacity-50 cursor-not-allowed" : ""}`}
-  >
-    <CardBody className="flex flex-col items-center justify-between p-6">
-      <div
-        className={`
-          w-full mb-4 px-4 py-2 text-white rounded-md text-center
-          ${
-            isConnected
-              ? platform === "Google Fit"
-                ? "bg-green-600"
-                : platform === "Apple Health"
-                ? "bg-gray-800"
-                : platform === "Fitbit"
-                ? "bg-blue-600"
-                : "bg-blue-500"
-              : "bg-purple-500 hover:bg-purple-600"
-          }
-          ${isConnected ? "cursor-not-allowed" : "cursor-pointer"}
-        `}
-      >
-        {isConnected ? `Connected to ${platform}` : `Connect to ${platform}`}
-      </div>
-      <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-        {description}
-      </p>
-    </CardBody>
-  </Card>
-);
 
 function Dashboard() {
   const [moodData, setMoodData] = useState(sampleMoodData);
@@ -80,6 +45,8 @@ function Dashboard() {
   const [isAppleHealthConnected, setIsAppleHealthConnected] = useState(false);
   const [isFitbitConnected, setIsFitbitConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+  const navigator = useNavigate();
+
   useEffect(() => {
     const initializeDashboard = async () => {
       const auth = getAuth();
@@ -100,7 +67,6 @@ function Dashboard() {
           }
         );
         if (userInfoResponse.ok) {
-          console.log(userInfoResponse);
           const userInfo = await userInfoResponse.json();
           setUser(userInfo);
           setLoading(false);
@@ -169,58 +135,132 @@ function Dashboard() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 min-h-screen">
-      <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
-        Welcome Back, {!loading ? user.displayName : "User"}!
-      </h1>
-      <Card>
+    <div className="min-h-screen bg-gradient-to-br from-[#1a1b1e] to-[#2d1b4b] text-white p-8">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+              Welcome Back, {!loading ? user.displayName : "User"}!
+            </h1>
+            <p className="text-gray-400 mt-2">
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          </div>
+          <Button
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white"
+            size="lg"
+            radius="full"
+          >
+            Start New Session
+          </Button>
+        </div>
+      </div>
+
+      {/* Health Platforms Section */}
+      <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800 mb-8">
         <CardBody className="p-8">
-          <h3 className="flex items-center justify-center mb-8 text-2xl font-semibold text-purple-600">
-            <Heart className="mr-2" /> Connect to Health Platforms
-          </h3>
+          <h2 className="text-2xl font-semibold mb-6 flex items-center">
+            <Heart className="mr-2 text-pink-500" /> Health Integrations
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <HealthPlatformCard
-              platform="Google Fit"
-              description="Sync your activity and health data from Google Fit."
-              color="success"
-              onClick={connectToGoogleFit}
-              isConnected={isGoogleFitConnected}
-            />
-            <HealthPlatformCard
-              platform="Apple Health"
-              description="Sync your health data from your iPhone."
-              color="default"
-              onClick={connectToAppleHealth}
-              isConnected={isAppleHealthConnected}
-            />
-            <HealthPlatformCard
-              platform="Fitbit"
-              description="Sync your activity and exercise data from Fitbit."
-              color="primary"
-              onClick={connectToFitbit}
-              isConnected={isFitbitConnected}
-            />
+            {/* Health Platform Cards with glassmorphism effect */}
+            {[
+              {
+                name: "Google Fit",
+                icon: "🏃‍♂️",
+                color: "from-green-400 to-cyan-500",
+                connected: isGoogleFitConnected,
+                onPress: connectToGoogleFit,
+              },
+              {
+                name: "Apple Health",
+                icon: "❤️",
+                color: "from-gray-500 to-gray-600",
+                connected: isAppleHealthConnected,
+                onPress: connectToAppleHealth,
+              },
+              {
+                name: "Fitbit",
+                icon: "⌚",
+                color: "from-blue-400 to-indigo-500",
+                connected: isFitbitConnected,
+                onPress: connectToFitbit,
+              },
+            ].map((platform) => (
+              <Card
+                key={platform.name}
+                className="bg-[#32333a]/30 backdrop-blur-sm border border-gray-800 hover:border-gray-700 transition-all cursor-pointer"
+                isPressable
+                onPress={platform.onPress}
+              >
+                <CardBody className="p-6">
+                  <div className="text-3xl mb-4">{platform.icon}</div>
+                  <h3 className="text-xl font-semibold mb-2">
+                    {platform.name}
+                  </h3>
+                  <Button
+                    className={`
+          mt-4 px-4 py-2 rounded-full text-sm font-medium w-full
+          ${
+            platform.connected
+              ? "bg-green-500/20 text-green-400"
+              : "bg-gray-700/50 text-gray-300 hover:bg-gray-600/50"
+          }
+        `}
+                    isLoading={loading && !platform.connected}
+                    onPress={(e) => {
+                      e.preventDefault();
+                      platform.onPress();
+                    }}
+                  >
+                    {platform.connected ? "Connected" : "Connect"}
+                  </Button>
+                </CardBody>
+              </Card>
+            ))}
           </div>
         </CardBody>
       </Card>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardBody>
-            <div className="flex items-center text-2xl font-semibold text-[#8A56CC] mb-4">
-              <BarChart className="mr-2" /> Mood Tracker
-            </div>
+
+      {/* Analytics Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        {/* Mood Tracker */}
+        <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
+          <CardBody className="p-6">
+            <h3 className="text-xl font-semibold mb-4 flex items-center">
+              <BarChart className="mr-2 text-purple-500" /> Mood Analytics
+            </h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={moodData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#9CA3AF"
+                    style={{ fontSize: "12px" }}
+                  />
+                  <YAxis stroke="#9CA3AF" style={{ fontSize: "12px" }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#1F2937",
+                      border: "none",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
                   <Line
                     type="monotone"
                     dataKey="mood"
-                    stroke="#8A56CC"
-                    strokeWidth={2}
+                    stroke="#8B5CF6"
+                    strokeWidth={3}
+                    dot={{ stroke: "#8B5CF6", strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 8, stroke: "#8B5CF6", strokeWidth: 2 }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -228,37 +268,39 @@ function Dashboard() {
           </CardBody>
         </Card>
 
-        <Card>
-          <CardBody>
-            <div className="flex items-center text-2xl font-semibold text-[#8A56CC] mb-4">
-              <Activity className="mr-2" /> Stress Level
-            </div>
-            <div className="flex flex-col items-center justify-center space-y-4">
+        {/* Stress Level */}
+        <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
+          <CardBody className="p-6">
+            <h3 className="text-xl font-semibold mb-4 flex items-center">
+              <Activity className="mr-2 text-orange-500" /> Stress Monitor
+            </h3>
+            <div className="flex flex-col items-center justify-center space-y-6">
               <div className="relative w-48 h-48">
-                <svg className="w-full h-full" viewBox="0 0 100 100">
+                <svg className="w-full h-full transform -rotate-90">
                   <circle
-                    className="text-gray-200 stroke-current"
-                    strokeWidth="10"
-                    cx="50"
-                    cy="50"
-                    r="40"
+                    className="text-gray-700"
+                    strokeWidth="12"
+                    stroke="currentColor"
                     fill="transparent"
-                  ></circle>
+                    r="70"
+                    cx="96"
+                    cy="96"
+                  />
                   <circle
-                    className="text-[#8A56CC] progress-ring__circle stroke-current"
-                    strokeWidth="10"
+                    className="text-orange-500"
+                    strokeWidth="12"
+                    strokeDasharray={440}
+                    strokeDashoffset={440 - (440 * stressLevel) / 10}
                     strokeLinecap="round"
-                    cx="50"
-                    cy="50"
-                    r="40"
+                    stroke="currentColor"
                     fill="transparent"
-                    strokeDasharray="251.2"
-                    strokeDashoffset={251.2 - (251.2 * stressLevel) / 10}
-                    transform="rotate(-90 50 50)"
-                  ></circle>
+                    r="70"
+                    cx="96"
+                    cy="96"
+                  />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-[#8A56CC]">
+                  <span className="text-5xl font-bold text-orange-500">
                     {stressLevel}
                   </span>
                 </div>
@@ -269,91 +311,116 @@ function Dashboard() {
                 max="10"
                 value={stressLevel}
                 onChange={(e) => setStressLevel(parseInt(e.target.value, 10))}
-                className="w-[80%] accent-[#8A56CC]"
+                className="w-[80%] accent-orange-500"
               />
             </div>
           </CardBody>
         </Card>
       </div>
 
-      <Card>
-        <CardBody>
-          <div className="flex items-center text-2xl font-semibold text-[#8A56CC] mb-4">
-            <Brain className="mr-2" /> How are you feeling right now?
-          </div>
-          <div className="flex flex-col items-center space-y-4">
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={currentMood}
-              onChange={handleMoodInput}
-              className="w-[80%] accent-[#8A56CC]"
-            />
-            <div className="flex justify-between w-full text-sm text-gray-600 dark:text-gray-400">
-              <span>Very Low</span>
-              <span>Neutral</span>
-              <span>Very High</span>
+      {/* Current Mood Section */}
+      <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800 mb-8">
+        <CardBody className="p-8">
+          <h3 className="text-2xl font-semibold mb-6 flex items-center">
+            <Brain className="mr-2 text-cyan-500" /> Current Mood
+          </h3>
+          <div className="flex flex-col items-center space-y-6">
+            <div className="w-full max-w-md">
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={currentMood}
+                onChange={handleMoodInput}
+                className="w-full accent-cyan-500"
+              />
+              <div className="flex justify-between mt-2 text-sm text-gray-400">
+                <span>Very Low</span>
+                <span>Neutral</span>
+                <span>Very High</span>
+              </div>
             </div>
-            <button
-              className="px-4 py-2 bg-[#8A56CC] text-white rounded-md hover:bg-[#7545B7] transition-colors"
-              onClick={() => console.log("Mood logged:", currentMood)}
+            <Button
+              className="bg-gradient-to-r from-cyan-500 to-blue-500"
+              size="lg"
+              radius="full"
+              onPress={() => console.log("Mood logged:", currentMood)}
             >
-              Log Mood
-            </button>
+              Log Current Mood
+            </Button>
           </div>
         </CardBody>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardBody>
-            <div className="flex items-center text-xl font-semibold text-[#8A56CC] mb-2">
-              <Calendar className="mr-2" /> Weekly Goal
+      {/* Footer Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Weekly Progress */}
+        <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
+          <CardBody className="p-6">
+            <div className="flex items-center text-xl font-semibold mb-4">
+              <Calendar className="mr-2 text-violet-500" /> Weekly Progress
             </div>
-            <p className="mb-2">Meditate for 10 minutes daily</p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-              <div
-                className="bg-[#8A56CC] h-2.5 rounded-full"
-                style={{ width: `${weeklyGoalProgress}%` }}
-              ></div>
-            </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              {weeklyGoalProgress}% completed
+            <Progress
+              value={weeklyGoalProgress}
+              className="mb-4"
+              classNames={{
+                indicator: "bg-gradient-to-r from-violet-500 to-fuchsia-500",
+                track: "bg-gray-800",
+              }}
+            />
+            <p className="text-gray-400 text-sm">
+              {weeklyGoalProgress}% of weekly goals completed
             </p>
           </CardBody>
         </Card>
 
-        <Card>
-          <CardBody>
-            <div className="flex items-center text-xl font-semibold text-[#8A56CC] mb-2">
-              <Brain className="mr-2" /> Mindfulness Exercise
+        {/* Mindfulness Exercise */}
+        <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
+          <CardBody className="p-6">
+            <div className="flex items-center text-xl font-semibold mb-4">
+              <Brain className="mr-2 text-pink-500" /> Daily Exercise
             </div>
-            <p className="mb-2">Try this 5-minute breathing exercise:</p>
-            <ol className="list-decimal list-inside text-sm text-gray-600 dark:text-gray-400">
-              <li>Find a comfortable position</li>
-              <li>Close your eyes and focus on your breath</li>
-              <li>Inhale for 4 counts, hold for 4, exhale for 4</li>
-              <li>Repeat for 5 minutes</li>
-            </ol>
-            <button
-              className="mt-4 px-4 py-2 bg-[#8A56CC] text-white rounded-md hover:bg-[#7545B7] transition-colors"
-              onClick={startExercise}
+            <ul className="space-y-2 mb-4 text-gray-400">
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-pink-500 rounded-full mr-2" />
+                Breathing Exercise (5 min)
+              </li>
+              <li className="flex items-center">
+                <div className="w-2 h-2 bg-pink-500 rounded-full mr-2" />
+                Meditation (10 min)
+              </li>
+            </ul>
+            <Button
+              className="w-full bg-gradient-to-r from-pink-500 to-rose-500"
+              onPress={startExercise}
             >
-              Start Exercise
-            </button>
+              Start Now
+            </Button>
           </CardBody>
         </Card>
 
-        <Card>
-          <CardBody>
-            <div className="flex items-center text-xl font-semibold text-[#8A56CC] mb-2">
-              <MessageSquare className="mr-2" /> Support Groups
+        {/* Support Groups */}
+        <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
+          <CardBody className="p-6">
+            <div className="flex items-center text-xl font-semibold mb-4">
+              <MessageSquare className="mr-2 text-emerald-500" /> Community
             </div>
-            <p className="mb-2">2 new messages in "Stress Management"</p>
-            <button className="w-full mt-2 px-4 py-2 bg-[#8A56CC] text-white rounded-md hover:bg-[#7545B7] transition-colors">
-              View Messages
-            </button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400">New messages</span>
+                <span className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full text-sm">
+                  2 new
+                </span>
+              </div>
+              <Button
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                onPress={() => {
+                  navigator("/community");
+                }}
+              >
+                View Messages
+              </Button>
+            </div>
           </CardBody>
         </Card>
       </div>
