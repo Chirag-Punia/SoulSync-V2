@@ -137,10 +137,11 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1b1e] to-[#2d1b4b] text-white p-8">
       {/* Header Section */}
+      {/* Header Section */}
       <div className="mb-8">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
               Welcome Back, {!loading ? user.displayName : "User"}!
             </h1>
             <p className="text-gray-400 mt-2">
@@ -152,12 +153,16 @@ function Dashboard() {
               })}
             </p>
           </div>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full sm:w-auto"
+          >
             <Button
-              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold"
+              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold w-full sm:w-auto"
               size="lg"
               radius="full"
-              startContent={<MessageSquare className="w-5 h-5" />}
+              startContent={<MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />}
               onPress={async () => {
                 try {
                   const auth = getAuth();
@@ -198,7 +203,11 @@ function Dashboard() {
                 }
               }}
             >
-              Subscribe to Daily Affirmations ✨
+              <span className="hidden sm:inline">
+                Subscribe to Daily Affirmations
+              </span>
+              <span className="sm:hidden">Subscribe</span>
+              <span className="ml-1">✨</span>
             </Button>
           </motion.div>
         </div>
