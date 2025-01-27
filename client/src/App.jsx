@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider } from "../src/context/ThemeContext";
 import Navbar from "./components/Navbar";
-import DashBoard from "./pages/DashBoard.jsx";
 import LandingPage from "./pages/LandingPage";
 import ChatBot from "./pages/ChatBot";
 import Community from "./pages/Community";
@@ -18,6 +17,7 @@ import GroupTherapy from "./pages/GroupTherapy";
 import TherapyRoom from "./pages/TherapyRoom";
 import ErrorBoundary from "./components/ErrorBoundary";
 import EmotionDetector from "./pages/EmotionDetector";
+import DashBoard from "./pages/DashBoard.jsx";
 function App() {
   return (
     <ThemeProvider>
