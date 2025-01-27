@@ -10,7 +10,7 @@ import profileRoutes from "./routes/profile.js";
 import { authenticateUser } from "./middleware/firebaseAuthMiddleware.js";
 import fitbitRoutes from "./routes/fitBitRoutes.js";
 import googleFitRoutes from "./routes/googleFitRoutes.js";
-
+import therapyRoutes from "./routes/therapy.js";
 dotenv.config();
 
 const app = express();
@@ -21,7 +21,7 @@ connectDB();
 app.use(
   cors({
     origin: [process.env.CLIENT_URL, "http://localhost:5173"],
-    methods: ["GET", "POST", "OPTIONS","PATCH"],
+    methods: ["GET", "POST", "OPTIONS", "PATCH", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -35,6 +35,7 @@ app.use("/api/schedule", scheduleRoutes);
 app.use("/api/data", authenticateUser, profileRoutes);
 app.use("/api/gfit", googleFitRoutes);
 app.use("/api/fitbit", fitbitRoutes);
+app.use("/api/therapy", therapyRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -23,6 +23,7 @@ import {
   FaTimes,
   FaEllipsisV,
 } from "react-icons/fa";
+import {toast} from "react-toastify";
 import { IoChatboxEllipses } from "react-icons/io5";
 import { motion } from "framer-motion";
 import Chat from "./Chat";
@@ -99,16 +100,40 @@ function Community() {
   };
 
   const handleLike = async (postId) => {
-    if (!auth.currentUser) return;
+    if (!auth.currentUser) {
+      toast.error("Please login to like posts");
+      return;
+    }
 
     try {
-      const updatedPost = await postService.likePost(
-        postId,
-        auth.currentUser.uid
+      const userId = auth.currentUser.uid;
+
+      // Optimistic update
+      setPosts(
+        posts.map((post) => {
+          if (post._id === postId) {
+            const isLiked = post.likes.includes(userId);
+            return {
+              ...post,
+              likes: isLiked
+                ? post.likes.filter((id) => id !== userId)
+                : [...post.likes, userId],
+            };
+          }
+          return post;
+        })
       );
+
+      // Make API call
+      const updatedPost = await postService.likePost(postId, userId);
+
+      // Update with server response
       setPosts(posts.map((post) => (post._id === postId ? updatedPost : post)));
     } catch (error) {
       console.error("Failed to like post:", error);
+      // Revert optimistic update if failed
+      await fetchPosts();
+      toast.error("Failed to update like");
     }
   };
 
@@ -271,20 +296,20 @@ function Community() {
                         size="sm"
                         variant="light"
                         onPress={() => handleLike(post._id)}
-                        className={
-                          post.likes.includes(auth.currentUser?.uid)
-                            ? "text-pink-500"
-                            : "text-gray-400"
-                        }
-                        startContent={
-                          post.likes.includes(auth.currentUser?.uid) ? (
-                            <FaHeart />
-                          ) : (
-                            <FaRegHeart />
-                          )
-                        }
+                        className={`transition-colors duration-200 ${
+                          post.likes?.includes(auth.currentUser?.uid)
+                            ? "text-pink-500 hover:text-pink-600"
+                            : "text-gray-400 hover:text-gray-300"
+                        }`}
                       >
-                        {post.likes.length}
+                        <div className="flex items-center gap-2">
+                          {post.likes?.includes(auth.currentUser?.uid) ? (
+                            <FaHeart className="text-lg" />
+                          ) : (
+                            <FaRegHeart className="text-lg" />
+                          )}
+                          <span>{post.likes?.length || 0}</span>
+                        </div>
                       </Button>
 
                       <Popover placement="bottom">

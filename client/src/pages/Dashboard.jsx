@@ -152,81 +152,248 @@ function Dashboard() {
               })}
             </p>
           </div>
-          <Button
-            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-            size="lg"
-            radius="full"
-          >
-            Start New Session
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold"
+              size="lg"
+              radius="full"
+              startContent={<MessageSquare className="w-5 h-5" />}
+              onPress={async () => {
+                try {
+                  const auth = getAuth();
+                  const user = auth.currentUser;
+
+                  if (!user) {
+                    toast.error("Please sign in to subscribe");
+                    return;
+                  }
+
+                  const response = await fetch(
+                    `${
+                      import.meta.env.VITE_API_BASE_URL
+                    }/users/subscribe-affirmations`,
+                    {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Bearer ${await user.getIdToken()}`,
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        email: user.email,
+                        name: user.displayName,
+                      }),
+                    }
+                  );
+
+                  if (response.ok) {
+                    toast.success(
+                      "Successfully subscribed to daily positive affirmations! ✨"
+                    );
+                  } else {
+                    throw new Error("Failed to subscribe");
+                  }
+                } catch (error) {
+                  console.error("Error subscribing to affirmations:", error);
+                  toast.warn("Feature in Progress");
+                }
+              }}
+            >
+              Subscribe to Daily Affirmations ✨
+            </Button>
+          </motion.div>
         </div>
       </div>
 
       {/* Health Platforms Section */}
-      <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800 mb-8">
-        <CardBody className="p-8">
-          <h2 className="text-2xl font-semibold mb-6 flex items-center">
-            <Heart className="mr-2 text-pink-500" /> Health Integrations
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {/* Health Platform Cards with glassmorphism effect */}
-            {[
-              {
-                name: "Google Fit",
-                icon: "🏃‍♂️",
-                color: "from-green-400 to-cyan-500",
-                connected: isGoogleFitConnected,
-                onPress: connectToGoogleFit,
-              },
-              {
-                name: "Apple Health",
-                icon: "❤️",
-                color: "from-gray-500 to-gray-600",
-                connected: isAppleHealthConnected,
-                onPress: connectToAppleHealth,
-              },
-              {
-                name: "Fitbit",
-                icon: "⌚",
-                color: "from-blue-400 to-indigo-500",
-                connected: isFitbitConnected,
-                onPress: connectToFitbit,
-              },
-            ].map((platform) => (
-              <Card
-                key={platform.name}
-                className="bg-[#32333a]/30 backdrop-blur-sm border border-gray-800 hover:border-gray-700 transition-all cursor-pointer"
-                isPressable
-                onPress={platform.onPress}
-              >
-                <CardBody className="p-6">
-                  <div className="text-3xl mb-4">{platform.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">
-                    {platform.name}
-                  </h3>
-                  <Button
-                    className={`
-          mt-4 px-4 py-2 rounded-full text-sm font-medium w-full
-          ${
-            platform.connected
-              ? "bg-green-500/20 text-green-400"
-              : "bg-gray-700/50 text-gray-300 hover:bg-gray-600/50"
-          }
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+        {[
+          {
+            name: "Google Fit",
+            icon: "🏃‍♂️",
+            color: "from-green-400 to-cyan-500",
+            connected: isGoogleFitConnected,
+            onPress: connectToGoogleFit,
+            description:
+              "Track fitness activities and health metrics with Google Fit integration",
+            features: ["Activity tracking", "Heart rate", "Sleep analysis"],
+          },
+          {
+            name: "Apple Health",
+            icon: "❤️",
+            color: "from-pink-500 to-rose-500",
+            connected: isAppleHealthConnected,
+            onPress: connectToAppleHealth,
+            description: "Sync your health and workout data from Apple Health",
+            features: ["Workout data", "Vital signs", "Nutrition"],
+          },
+          {
+            name: "Fitbit",
+            icon: "⌚",
+            color: "from-blue-400 to-indigo-500",
+            connected: isFitbitConnected,
+            onPress: connectToFitbit,
+            description:
+              "Monitor your daily activities and wellness metrics with Fitbit",
+            features: ["Step counting", "Sleep quality", "Exercise tracking"],
+          },
+        ].map((platform) => (
+          <motion.div
+            key={platform.name}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="h-full"
+          >
+            <Card
+              isPressable
+              onPress={platform.onPress}
+              className={`
+          h-full bg-[#32333a]/30 backdrop-blur-sm
+          ${platform.connected ? "border-green-500/30" : "border-gray-800"}
+          hover:border-purple-500/50 transition-all duration-300
+          group
         `}
-                    isLoading={loading && !platform.connected}
-                    onPress={(e) => {
-                      e.preventDefault();
-                      platform.onPress();
-                    }}
+            >
+              <CardBody className="p-8">
+                {/* Header Section */}
+                <div className="flex items-center space-x-4 mb-6">
+                  <div
+                    className={`
+                w-16 h-16 rounded-full
+                flex items-center justify-center
+                bg-gradient-to-r ${platform.color} bg-opacity-20
+                group-hover:scale-110 transition-transform duration-300
+              `}
                   >
-                    {platform.connected ? "Connected" : "Connect"}
+                    <span className="text-3xl">{platform.icon}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold group-hover:text-purple-400 transition-colors">
+                      {platform.name}
+                    </h3>
+                    <p className="text-sm text-gray-400 mt-1">
+                      {platform.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Features List */}
+                <div className="space-y-3 mb-6">
+                  {platform.features.map((feature, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center space-x-2 text-gray-300"
+                    >
+                      <div
+                        className={`
+                  w-1.5 h-1.5 rounded-full
+                  bg-gradient-to-r ${platform.color}
+                `}
+                      />
+                      <span className="text-sm">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Connection Status */}
+                <div
+                  className={`
+            mt-auto flex items-center justify-between
+            p-4 rounded-xl
+            ${platform.connected ? "bg-green-500/10" : "bg-gray-700/30"}
+            transition-colors duration-300
+          `}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className={`
+                w-2 h-2 rounded-full
+                ${
+                  platform.connected
+                    ? "bg-green-500 animate-pulse"
+                    : "bg-gray-600"
+                }
+              `}
+                    />
+                    <span
+                      className={`
+                text-sm font-medium
+                ${platform.connected ? "text-green-400" : "text-gray-400"}
+              `}
+                    >
+                      {platform.connected ? "Connected" : "Not Connected"}
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    className={`
+                ${
+                  platform.connected
+                    ? "bg-green-500/20 text-green-400"
+                    : "bg-purple-500/20 text-purple-400"
+                }
+                hover:opacity-80 transition-opacity
+              `}
+                  >
+                    {platform.connected ? "Manage" : "Connect"}
                   </Button>
-                </CardBody>
-              </Card>
-            ))}
-          </div>
-        </CardBody>
-      </Card>
+                </div>
+              </CardBody>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Quick Stats Section */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {[
+          {
+            title: "Connected Devices",
+            value: "3/3",
+            icon: <Heart className="text-pink-500" />,
+            color: "from-pink-500 to-rose-500",
+          },
+          {
+            title: "Data Synced",
+            value: "Last 24h",
+            icon: <Activity className="text-green-500" />,
+            color: "from-green-500 to-emerald-500",
+          },
+          {
+            title: "Active Trackers",
+            value: "2 Active",
+            icon: <BarChart className="text-blue-500" />,
+            color: "from-blue-500 to-indigo-500",
+          },
+          {
+            title: "Health Score",
+            value: "85/100",
+            icon: <Brain className="text-purple-500" />,
+            color: "from-purple-500 to-violet-500",
+          },
+        ].map((stat, index) => (
+          <Card
+            key={index}
+            className="bg-[#32333a]/30 backdrop-blur-sm border border-gray-800"
+          >
+            <CardBody className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-400">{stat.title}</p>
+                  <p className="text-2xl font-semibold mt-1">{stat.value}</p>
+                </div>
+                <div
+                  className={`
+            p-3 rounded-xl
+            bg-gradient-to-r ${stat.color} bg-opacity-20
+          `}
+                >
+                  {stat.icon}
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
 
       {/* Analytics Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">

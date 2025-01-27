@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider } from "../src/context/ThemeContext";
 import Navbar from "./components/Navbar";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/DashBoard";
 import LandingPage from "./pages/LandingPage";
 import ChatBot from "./pages/ChatBot";
 import Community from "./pages/Community";
@@ -14,7 +14,10 @@ import PrivateRoute from "./components/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PublicRoute from "./components/PublicRoute";
-
+import GroupTherapy from "./pages/GroupTherapy";
+import TherapyRoom from "./pages/TherapyRoom";
+import ErrorBoundary from "./components/ErrorBoundary";
+import EmotionDetector from "./pages/EmotionDetector";
 function App() {
   return (
     <ThemeProvider>
@@ -67,6 +70,14 @@ function App() {
                   }
                 />
                 <Route
+                  path="/group-therapy"
+                  element={
+                    <PrivateRoute>
+                      <GroupTherapy />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
                   path="/community"
                   element={
                     <PrivateRoute>
@@ -79,6 +90,32 @@ function App() {
                   element={
                     <PrivateRoute>
                       <Resources />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/group-therapy"
+                  element={
+                    <PrivateRoute>
+                      <GroupTherapy />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/EmotionDetector"
+                  element={
+                    <PrivateRoute>
+                      <EmotionDetector />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/group-therapy/:roomId"
+                  element={
+                    <PrivateRoute>
+                      <ErrorBoundary>
+                        <TherapyRoom />
+                      </ErrorBoundary>
                     </PrivateRoute>
                   }
                 />

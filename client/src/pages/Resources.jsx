@@ -18,6 +18,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { CalendarIcon, PlusIcon, EditIcon, TrashIcon } from "lucide-react";
 import ChallengesTabs from "../components/ChallengesTabs";
+
+import MusicTherapy from "./MusicTherapy";
 const resourceCategories = [
   {
     id: 1,
@@ -89,6 +91,7 @@ const resourceCategories = [
 ];
 
 function Resources() {
+  const [activeTab, setActiveTab] = useState("resources"); // Add this with your other state declarations
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -207,183 +210,230 @@ function Resources() {
         )}
       </div>
 
-      {!selectedCategory ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {resourceCategories.map((category) => (
-            <Card
-              key={category.id}
-              isPressable
-              onPress={() => setSelectedCategory(category)}
-              className="hover:scale-105 transition-transform bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-700 dark:to-primary-800"
-            >
-              <CardBody className="p-6">
-                <h2 className="text-2xl font-semibold mb-2">
-                  {category.title}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300">
-                  {category.resources.length} resources available
-                </p>
-              </CardBody>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <h2 className="text-2xl font-semibold mb-4">
-            {selectedCategory.title}
-          </h2>
-          {selectedCategory.resources.map((resource) => (
-            <Card
-              key={resource.id}
-              className="bg-gradient-to-r from-secondary-100 to-secondary-200 dark:from-secondary-700 dark:to-secondary-800"
-            >
-              <CardBody className="p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-xl font-semibold">{resource.title}</h3>
-                    <p className="text-sm text-gray-500 capitalize">
-                      Type: {resource.type}
-                    </p>
-                  </div>
-                  <Button
-                    color="primary"
-                    variant="shadow"
-                    as="a"
-                    href={resource.link}
-                    target="_blank"
-                  >
-                    Access Resource
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Main Navigation Tabs */}
+      <div className="flex space-x-4 mb-6">
+        <Button
+          color={activeTab === "resources" ? "primary" : "default"}
+          variant={activeTab === "resources" ? "shadow" : "light"}
+          onPress={() => setActiveTab("resources")}
+          className="flex-1 md:flex-none"
+        >
+          Health Resources
+        </Button>
+        <Button
+          color={activeTab === "music" ? "primary" : "default"}
+          variant={activeTab === "music" ? "shadow" : "light"}
+          onPress={() => setActiveTab("music")}
+          className="flex-1 md:flex-none"
+        >
+          Music Therapy
+        </Button>
+      </div>
 
-      <Card className="mt-8 bg-gradient-to-br from-tertiary-100 to-tertiary-200 dark:from-tertiary-700 dark:to-tertiary-800">
-        <CardBody>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => setIsChallengesExpanded(!isChallengesExpanded)}
-          >
-            <h2 className="text-3xl font-semibold">Wellness Challenges</h2>
-            <Button
-              auto
-              light
-              onPress={() => setIsChallengesExpanded(!isChallengesExpanded)}
-            >
-              {isChallengesExpanded ? "Collapse" : "Explore Challenges"}
-            </Button>
-          </div>
-          {isChallengesExpanded && (
-            <div className="mt-4">
-              <ChallengesTabs />
+      {/* Tab Content */}
+      {activeTab === "resources" ? (
+        <>
+          {!selectedCategory ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {resourceCategories.map((category) => (
+                <Card
+                  key={category.id}
+                  isPressable
+                  onPress={() => setSelectedCategory(category)}
+                  className="hover:scale-105 transition-transform bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-700 dark:to-primary-800"
+                >
+                  <CardBody className="p-6">
+                    <h2 className="text-2xl font-semibold mb-2">
+                      {category.title}
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {category.resources.length} resources available
+                    </p>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold mb-4">
+                {selectedCategory.title}
+              </h2>
+              {selectedCategory.resources.map((resource) => (
+                <Card
+                  key={resource.id}
+                  className="bg-gradient-to-r from-secondary-100 to-secondary-200 dark:from-secondary-700 dark:to-secondary-800"
+                >
+                  <CardBody className="p-4">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="text-xl font-semibold">
+                          {resource.title}
+                        </h3>
+                        <p className="text-sm text-gray-500 capitalize">
+                          Type: {resource.type}
+                        </p>
+                      </div>
+                      <Button
+                        color="primary"
+                        variant="shadow"
+                        as="a"
+                        href={resource.link}
+                        target="_blank"
+                      >
+                        Access Resource
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
             </div>
           )}
-        </CardBody>
-      </Card>
 
-      <Card className="mt-8 bg-gradient-to-br from-tertiary-100 to-tertiary-200 dark:from-tertiary-700 dark:to-tertiary-800">
-        <CardBody>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => setIsScheduleExpanded(!isScheduleExpanded)}
-          >
-            <h2 className="text-3xl font-semibold">Your Daily Schedule</h2>
-            <Button
-              auto
-              light
-              onPress={() => setIsScheduleExpanded(!isScheduleExpanded)}
-            >
-              {isScheduleExpanded ? "Collapse" : "Expand"}
-            </Button>
-          </div>
-          {isScheduleExpanded && (
-            <div className="mt-4">
-              <div className="mb-6 flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                  <DatePicker
-                    selected={taskDate}
-                    onChange={(date) => setTaskDate(date)}
-                    customInput={
-                      <Button isDisabled auto light>
-                        <CalendarIcon className="mr-2" />
-                        {taskDate.toLocaleDateString()}
-                      </Button>
-                    }
-                  />
-                </div>
+          <Card className="mt-8 bg-gradient-to-br from-tertiary-100 to-tertiary-200 dark:from-tertiary-700 dark:to-tertiary-800">
+            <CardBody>
+              <div
+                className="flex justify-between items-center cursor-pointer"
+                onPress={() => setIsChallengesExpanded(!isChallengesExpanded)}
+              >
+                <h2 className="text-3xl font-semibold">Wellness Challenges</h2>
                 <Button
-                  color="primary"
                   auto
-                  onPress={() => setIsModalOpen(true)}
+                  light
+                  onPress={() => setIsChallengesExpanded(!isChallengesExpanded)}
                 >
-                  <PlusIcon className="mr-2" />
-                  Add Task
+                  {isChallengesExpanded ? "Collapse" : "Explore Challenges"}
                 </Button>
               </div>
-              {loading ? (
-                <div className="flex justify-center">
-                  <Spinner size="xl" />
+              {isChallengesExpanded && (
+                <div className="mt-4">
+                  <ChallengesTabs />
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {schedule.length > 0 ? (
-                    schedule.map((task) => (
-                      <Card
-                        key={task._id}
-                        className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow"
-                      >
-                        <CardBody>
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <h3 className="text-xl font-semibold">
-                                {task.title}
-                              </h3>
-                              <p className="text-sm text-gray-500">
-                                {task.time}
-                              </p>
-                              {task.description && (
-                                <p className="text-gray-600 dark:text-gray-400 mt-2">
-                                  {task.description}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                color={task.completed ? "success" : "warning"}
-                                auto
-                                onPress={() => handleCompleteTask(task._id)}
-                              >
-                                {task.completed
-                                  ? "Completed"
-                                  : "Mark as Completed"}
-                              </Button>
-                              <Button
-                                color="error"
-                                auto
-                                onPress={() => handleDeleteTask(task._id)}
-                              >
-                                <TrashIcon />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardBody>
-                      </Card>
-                    ))
+              )}
+            </CardBody>
+          </Card>
+
+          <Card className="mt-8 bg-gradient-to-br from-tertiary-100 to-tertiary-200 dark:from-tertiary-700 dark:to-tertiary-800">
+            <CardBody>
+              <div
+                className="flex justify-between items-center cursor-pointer"
+                onPress={() => setIsScheduleExpanded(!isScheduleExpanded)}
+              >
+                <h2 className="text-3xl font-semibold">Your Daily Schedule</h2>
+                <Button
+                  auto
+                  light
+                  onPress={() => setIsScheduleExpanded(!isScheduleExpanded)}
+                >
+                  {isScheduleExpanded ? "Collapse" : "Expand"}
+                </Button>
+              </div>
+              {isScheduleExpanded && (
+                <div className="mt-4">
+                  <div className="mb-6 flex justify-between items-center">
+                    <div className="flex items-center space-x-4">
+                      <DatePicker
+                        selected={taskDate}
+                        onChange={(date) => setTaskDate(date)}
+                        customInput={
+                          <Button isDisabled auto light>
+                            <CalendarIcon className="mr-2" />
+                            {taskDate.toLocaleDateString()}
+                          </Button>
+                        }
+                      />
+                    </div>
+                    <Button
+                      color="primary"
+                      auto
+                      onPress={() => setIsModalOpen(true)}
+                    >
+                      <PlusIcon className="mr-2" />
+                      Add Task
+                    </Button>
+                  </div>
+                  {loading ? (
+                    <div className="flex justify-center">
+                      <Spinner size="xl" />
+                    </div>
                   ) : (
-                    <p className="text-center text-gray-500">
-                      No tasks for the selected date
-                    </p>
+                    <div className="space-y-4">
+                      {schedule.length > 0 ? (
+                        schedule.map((task) => (
+                          <Card
+                            key={task._id}
+                            className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow"
+                          >
+                            <CardBody>
+                              <div className="flex justify-between items-center">
+                                <div>
+                                  <h3 className="text-xl font-semibold">
+                                    {task.title}
+                                  </h3>
+                                  <p className="text-sm text-gray-500">
+                                    {task.time}
+                                  </p>
+                                  {task.description && (
+                                    <p className="text-gray-600 dark:text-gray-400 mt-2">
+                                      {task.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    color={
+                                      task.completed ? "success" : "warning"
+                                    }
+                                    auto
+                                    onPress={() => handleCompleteTask(task._id)}
+                                  >
+                                    {task.completed
+                                      ? "Completed"
+                                      : "Mark as Completed"}
+                                  </Button>
+                                  <Button
+                                    color="error"
+                                    auto
+                                    onPress={() => handleDeleteTask(task._id)}
+                                  >
+                                    <TrashIcon />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardBody>
+                          </Card>
+                        ))
+                      ) : (
+                        <p className="text-center text-gray-500">
+                          No tasks for the selected date
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
-            </div>
-          )}
-        </CardBody>
-      </Card>
+            </CardBody>
+          </Card>
 
+          <Card className="mt-8 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-700 dark:to-red-800">
+            <CardBody>
+              <h3 className="text-xl font-semibold mb-2">
+                Need Immediate Help?
+              </h3>
+              <p className="mb-4">
+                If you're in crisis or having thoughts of suicide, please reach
+                out:
+              </p>
+              <Button color="danger" size="lg" as="a" href="tel:988">
+                Call 988 - Crisis Lifeline
+              </Button>
+            </CardBody>
+          </Card>
+        </>
+      ) : (
+        <MusicTherapy />
+      )}
+
+      {/* Task Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => {
@@ -443,18 +493,6 @@ function Resources() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
-      <Card className="mt-8 bg-gradient-to-br from-red-100 to-red-200 dark:from-red-700 dark:to-red-800">
-        <CardBody>
-          <h3 className="text-xl font-semibold mb-2">Need Immediate Help?</h3>
-          <p className="mb-4">
-            If you're in crisis or having thoughts of suicide, please reach out:
-          </p>
-          <Button color="danger" size="lg" as="a" href="tel:988">
-            Call 988 - Crisis Lifeline
-          </Button>
-        </CardBody>
-      </Card>
     </div>
   );
 }

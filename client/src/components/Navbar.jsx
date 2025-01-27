@@ -60,6 +60,17 @@ function Navbar() {
       path: "/community",
       icon: <FaUsers className="text-xl" />,
     },
+
+    {
+      name: "Group Therapy",
+      path: "/group-therapy",
+      icon: <FaUsers className="text-xl" />,
+    },
+    {
+      name: "Emotion Detector",
+      path: "/EmotionDetector",
+      icon: <FaUsers className="text-xl" />,
+    },
     {
       name: "Resources",
       path: "/resources",
