@@ -17,7 +17,7 @@ import GroupTherapy from "./pages/GroupTherapy";
 import TherapyRoom from "./pages/TherapyRoom";
 import ErrorBoundary from "./components/ErrorBoundary";
 import EmotionDetector from "./pages/EmotionDetector";
-import DashBoard from "./pages/DashBoard.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 function App() {
   return (
     <ThemeProvider>
@@ -57,7 +57,7 @@ function App() {
                   path="/dashboard"
                   element={
                     <PrivateRoute>
-                      <DashBoard />
+                      <Dashboard />
                     </PrivateRoute>
                   }
                 />
