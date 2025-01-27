@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { NextUIProvider } from "@nextui-org/react";
 import { ThemeProvider } from "../src/context/ThemeContext";
 import Navbar from "./components/Navbar";
-import Dashboard from "./pages/DashBoard";
+import Dashboard from "./pages/DashBoard.js";
 import LandingPage from "./pages/LandingPage";
 import ChatBot from "./pages/ChatBot";
 import Community from "./pages/Community";
