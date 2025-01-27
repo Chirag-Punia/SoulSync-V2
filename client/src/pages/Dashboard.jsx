@@ -34,7 +34,7 @@ const sampleMoodData = [
   { date: "2024-02-05", mood: 9 },
 ];
 
-function Dashboard() {
+function DashBoard() {
   const [moodData, setMoodData] = useState(sampleMoodData);
   const [stressLevel, setStressLevel] = useState(4);
   const [user, setUser] = useState();
@@ -599,4 +599,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default DashBoard;
