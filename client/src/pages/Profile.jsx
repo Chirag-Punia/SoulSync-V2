@@ -260,7 +260,6 @@ function Profile() {
           Profile Settings
         </motion.h1>
 
-        {/* Profile Card */}
         <motion.div variants={itemVariants}>
           <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
             <CardBody className="space-y-6">
@@ -349,8 +348,6 @@ function Profile() {
           </Card>
         </motion.div>
 
-        {/* Preferences Card */}
-        {/* Preferences Card */}
         <motion.div variants={itemVariants}>
           <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
             <CardBody>
@@ -460,7 +457,6 @@ function Profile() {
           </Card>
         </motion.div>
 
-        {/* Connected Accounts Card */}
         <motion.div variants={itemVariants}>
           <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
             <CardBody>
@@ -515,7 +511,6 @@ function Profile() {
           </Card>
         </motion.div>
 
-        {/* Privacy & Security Card */}
         <motion.div variants={itemVariants}>
           <Card className="bg-black/20 backdrop-blur-xl border border-white/10">
             <CardBody>

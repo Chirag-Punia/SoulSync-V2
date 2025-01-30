@@ -1,4 +1,3 @@
-// userService.js
 import { api } from "./apiClient";
 import { getAuthToken } from "./authService";
 import { auth } from "./firebaseConfig";

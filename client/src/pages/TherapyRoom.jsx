@@ -1,39 +1,29 @@
-// pages/TherapyRoom.jsx
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Card } from "@nextui-org/react";
 import {
-  FaVideo,
-  FaVideoSlash,
   FaMicrophone,
   FaMicrophoneSlash,
   FaSignOutAlt,
   FaCopy,
 } from "react-icons/fa";
-import AgoraRTC from "agora-rtc-sdk-ng";
 import { Tooltip } from "@nextui-org/tooltip";
-import { createAgoraClient } from "../services/agoraService";
 import { toast } from "react-toastify";
 import { auth } from "../services/firebaseConfig";
-import { videoConfig, audioConfig } from "../services/agoraService";
 
 const TherapyRoom = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const [localVideoTrack, setLocalVideoTrack] = useState(null);
-  const [localAudioTrack, setLocalAudioTrack] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  const socketRef = useRef();
+  const peerConnectionsRef = useRef({});
+  const localStreamRef = useRef(null);
+
+  const [participants, setParticipants] = useState(new Map());
   const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isCopied, setIsCopied] = useState(false);
 
-  const clientRef = useRef(null);
-  const initialized = useRef(false);
-  const isComponentMounted = useRef(true);
-
-  // Copy Room ID functionality
   const copyRoomId = async () => {
     try {
       await navigator.clipboard.writeText(roomId);
@@ -45,223 +35,121 @@ const TherapyRoom = () => {
     }
   };
 
-  // Prevent accidental window/tab close
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, []);
-
-  // Main initialization effect
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    const init = async () => {
+    const initializeRoom = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-
-        // Generate UID
-        const uid = Math.floor(Math.random() * 1000000);
-
-        // Get token
-        const response = await fetch("http://localhost:5002/api/therapy/token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
-          },
-          body: JSON.stringify({
-            channelName: roomId,
-            uid: uid,
-          }),
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: false,
         });
+        localStreamRef.current = stream;
+        setIsAudioEnabled(true);
 
-        if (!response.ok) {
-          throw new Error("Failed to get token");
-        }
+        setupSocketHandlers();
 
-        const { token } = await response.json();
+        joinRoom();
 
-        // Create Agora client
-        const agoraClient = createAgoraClient();
-        clientRef.current = agoraClient;
-
-        // Set up event handlers
-        agoraClient.on("user-published", handleUserPublished);
-        agoraClient.on("user-unpublished", handleUserUnpublished);
-        agoraClient.on("user-left", handleUserLeft);
-        agoraClient.on("connection-state-change", handleConnectionStateChange);
-
-        // Join channel
-        await agoraClient.join(
-          import.meta.env.VITE_AGORA_APP_ID,
-          roomId,
-          token,
-          uid
-        );
-
-        // Create local tracks
-        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks(
-          {
-            encoderConfig: "high_quality",
-            AEC: true,
-            ANS: true,
-            AGC: true,
-          },
-          {
-            encoderConfig: {
-              width: { min: 640, ideal: 1920, max: 1920 },
-              height: { min: 360, ideal: 1080, max: 1080 },
-              frameRate: 30,
-              bitrateMin: 400,
-              bitrateMax: 4000,
-            },
-            facingMode: "user",
-          }
-        );
-
-        if (isComponentMounted.current) {
-          setLocalAudioTrack(audioTrack);
-          setLocalVideoTrack(videoTrack);
-
-          // Play local video
-          videoTrack.play("local-video");
-
-          // Publish tracks
-          await agoraClient.publish([audioTrack, videoTrack]);
-          
-          setIsLoading(false);
-          toast.success("Connected to session successfully!");
-        }
+        setIsLoading(false);
       } catch (err) {
-        console.error("Error initializing video call:", err);
-        if (isComponentMounted.current) {
-          setError(err.message);
-          setIsLoading(false);
-          toast.error("Failed to join session");
-        }
+        console.error("Error initializing room:", err);
+        setError("Failed to access microphone. Please check permissions.");
+        setIsLoading(false);
       }
     };
 
-    init();
+    initializeRoom();
 
     return () => {
-      isComponentMounted.current = false;
       cleanup();
     };
   }, [roomId]);
 
-  // Cleanup function
-  const cleanup = async () => {
-    try {
-      if (localVideoTrack) {
-        localVideoTrack.close();
-      }
-      if (localAudioTrack) {
-        localAudioTrack.close();
-      }
-      if (clientRef.current) {
-        clientRef.current.removeAllListeners();
-        await clientRef.current.leave();
-      }
-    } catch (err) {
-      console.error("Cleanup error:", err);
-    }
+  const setupSocketHandlers = () => {
+    /*
+    socketRef.current.on('userJoined', handleUserJoined);
+    socketRef.current.on('userLeft', handleUserLeft);
+    socketRef.current.on('offer', handleOffer);
+    socketRef.current.on('answer', handleAnswer);
+    socketRef.current.on('iceCandidate', handleIceCandidate);
+    */
   };
 
-  // Event handlers
-  const handleUserPublished = async (user, mediaType) => {
-    try {
-      if (!clientRef.current) {
-        console.error("Client not initialized");
-        return;
-      }
+  const joinRoom = async () => {
+    /*
+    socketRef.current.emit('joinRoom', {
+      roomId,
+      userId: auth.currentUser.uid
+    });
+    */
+  };
 
-      await clientRef.current.subscribe(user, mediaType);
+  const createPeerConnection = (userId) => {
+    /*
+    const peerConnection = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
 
-      if (mediaType === "video") {
-        user.videoTrack?.play(`remote-video-${user.uid}`);
-      }
-      if (mediaType === "audio") {
-        user.audioTrack?.play();
-      }
+      ]
+    });
+    
 
-      setUsers((prev) => {
-        const exists = prev.some((u) => u.uid === user.uid);
-        if (exists) {
-          return prev.map((u) => (u.uid === user.uid ? user : u));
-        }
-        return [...prev, user];
+    localStreamRef.current.getTracks().forEach(track => {
+      peerConnection.addTrack(track, localStreamRef.current);
+    });
+
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socketRef.current.emit('iceCandidate', {
+          candidate: event.candidate,
+          to: userId
+        });
+      }
+    };
+
+
+    peerConnection.ontrack = (event) => {
+
+    };
+
+    peerConnectionsRef.current[userId] = peerConnection;
+    return peerConnection;
+    */
+  };
+
+  const toggleAudio = () => {
+    if (localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      audioTrack.enabled = !audioTrack.enabled;
+      setIsAudioEnabled(audioTrack.enabled);
+
+      /*
+      socketRef.current.emit('audioStateChange', {
+        roomId,
+        enabled: audioTrack.enabled
       });
-    } catch (err) {
-      console.error("Error subscribing to user:", err);
-      toast.error("Failed to connect to a participant");
-    }
-  };
-
-  const handleUserUnpublished = (user, mediaType) => {
-    if (mediaType === "video") {
-      user.videoTrack?.stop();
-    }
-    if (mediaType === "audio") {
-      user.audioTrack?.stop();
-    }
-  };
-
-  const handleUserLeft = (user) => {
-    setUsers((prev) => prev.filter((u) => u.uid !== user.uid));
-  };
-
-  const handleConnectionStateChange = (curState, prevState, reason) => {
-    console.log(
-      "Connection state changed:",
-      prevState,
-      "->",
-      curState,
-      "reason:",
-      reason
-    );
-    if (curState === "DISCONNECTED") {
-      toast.error("Connection lost. Trying to reconnect...");
-    } else if (curState === "CONNECTED") {
-      toast.success("Connected successfully!");
-    }
-  };
-
-  // Media control functions
-  const toggleVideo = async () => {
-    if (localVideoTrack) {
-      await localVideoTrack.setEnabled(!isVideoEnabled);
-      setIsVideoEnabled(!isVideoEnabled);
-    }
-  };
-
-  const toggleAudio = async () => {
-    if (localAudioTrack) {
-      await localAudioTrack.setEnabled(!isAudioEnabled);
-      setIsAudioEnabled(!isAudioEnabled);
+      */
     }
   };
 
   const leaveSession = async () => {
-    try {
-      await cleanup();
-      navigate("/group-therapy");
-    } catch (err) {
-      console.error("Error leaving session:", err);
+    cleanup();
+    navigate("/group-therapy");
+  };
+
+  const cleanup = () => {
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
+    }
+
+    Object.values(peerConnectionsRef.current).forEach((pc) => pc.close());
+    peerConnectionsRef.current = {};
+
+    if (socketRef.current) {
+      socketRef.current.disconnect();
     }
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -270,7 +158,6 @@ const TherapyRoom = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -287,10 +174,30 @@ const TherapyRoom = () => {
     );
   }
 
-  // Main render
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Room ID display */}
+      <Card className="p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-2">
+          Participants ({participants.size + 1})
+        </h3>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span>You {isAudioEnabled ? "(🎤 on)" : "(🎤 off)"}</span>
+          </div>
+
+          {Array.from(participants.values()).map((participant) => (
+            <div key={participant.id} className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span>
+                Participant {participant.id}
+                {participant.isAudioEnabled ? "(🎤 on)" : "(🎤 off)"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       <div className="flex justify-center items-center mb-6">
         <div className="bg-background/60 backdrop-blur-lg border border-white/20 rounded-lg px-4 py-2 flex items-center gap-2">
           <span className="text-sm">Room ID: {roomId}</span>
@@ -308,41 +215,7 @@ const TherapyRoom = () => {
         </div>
       </div>
 
-      {/* Video grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Local user video */}
-        <Card className="relative aspect-video bg-black">
-          <div id="local-video" className="w-full h-full"></div>
-          <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-sm">
-            You
-          </div>
-        </Card>
-
-        {/* Remote users video */}
-        {users.map((user) => (
-          <Card key={user.uid} className="relative aspect-video bg-black">
-            <div
-              id={`remote-video-${user.uid}`}
-              className="w-full h-full"
-            ></div>
-            <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-sm">
-              Participant {user.uid}
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Controls */}
       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex gap-4">
-        <Button
-          isIconOnly
-          className={`rounded-full p-4 ${
-            isVideoEnabled ? "bg-purple-600" : "bg-red-600"
-          }`}
-          onPress={toggleVideo}
-        >
-          {isVideoEnabled ? <FaVideo /> : <FaVideoSlash />}
-        </Button>
         <Button
           isIconOnly
           className={`rounded-full p-4 ${

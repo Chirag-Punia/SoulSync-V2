@@ -1,6 +1,12 @@
-// components/MusicTherapy.jsx
 import { useState, useEffect } from "react";
-import { Card, CardBody, Button, Input, Progress, Badge } from "@nextui-org/react";
+import {
+  Card,
+  CardBody,
+  Button,
+  Input,
+  Progress,
+  Badge,
+} from "@nextui-org/react";
 import {
   PlayIcon,
   PauseIcon,
@@ -21,7 +27,8 @@ const musicTracks = [
     url: "https://cdn.pixabay.com/download/audio/2024/10/30/audio_42e6870f29.mp3?filename=calming-rain-257596.mp3",
     category: "Nature",
     duration: "3:20",
-    image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=800&auto=format&fit=crop",
   },
   {
     id: 2,
@@ -30,7 +37,8 @@ const musicTracks = [
     url: "https://cdn.pixabay.com/download/audio/2024/04/03/audio_fbb6101bb2.mp3?filename=zen-bells-sound-199835.mp3",
     category: "Meditation",
     duration: "4:15",
-    image: "https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?w=800&auto=format&fit=crop",
   },
   {
     id: 3,
@@ -39,7 +47,8 @@ const musicTracks = [
     url: "https://cdn.pixabay.com/download/audio/2023/07/04/audio_483452e03a.mp3?filename=spring-morning-forest-wildlife-156670.mp3",
     category: "Nature",
     duration: "5:30",
-    image: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&auto=format&fit=crop",
   },
   {
     id: 4,
@@ -48,7 +57,8 @@ const musicTracks = [
     url: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_a4193b8e73.mp3?filename=binaural_delta_500_501-5hz-19563.mp3",
     category: "Meditation",
     duration: "6:00",
-    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&auto=format&fit=crop",
   },
   {
     id: 5,
@@ -57,7 +67,8 @@ const musicTracks = [
     url: "https://cdn.pixabay.com/download/audio/2022/06/07/audio_b9bd4170e4.mp3?filename=ocean-waves-112906.mp3",
     category: "Nature",
     duration: "4:45",
-    image: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=800&auto=format&fit=crop",
   },
 ];
 
@@ -144,7 +155,8 @@ function MusicTherapy() {
 
   const handleProgressClick = (e) => {
     const progressBar = e.currentTarget;
-    const clickPosition = (e.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
+    const clickPosition =
+      (e.pageX - progressBar.offsetLeft) / progressBar.offsetWidth;
     const newTime = clickPosition * audio.duration;
     audio.currentTime = newTime;
     setProgress((newTime / audio.duration) * 100);
@@ -159,26 +171,34 @@ function MusicTherapy() {
   };
 
   const playNext = () => {
-    const currentIndex = filteredTracks.findIndex((track) => track.id === currentTrack?.id);
-    const nextTrack = filteredTracks[(currentIndex + 1) % filteredTracks.length];
+    const currentIndex = filteredTracks.findIndex(
+      (track) => track.id === currentTrack?.id
+    );
+    const nextTrack =
+      filteredTracks[(currentIndex + 1) % filteredTracks.length];
     handlePlay(nextTrack);
   };
 
   const playPrevious = () => {
-    const currentIndex = filteredTracks.findIndex((track) => track.id === currentTrack?.id);
-    const previousTrack = filteredTracks[currentIndex === 0 ? filteredTracks.length - 1 : currentIndex - 1];
+    const currentIndex = filteredTracks.findIndex(
+      (track) => track.id === currentTrack?.id
+    );
+    const previousTrack =
+      filteredTracks[
+        currentIndex === 0 ? filteredTracks.length - 1 : currentIndex - 1
+      ];
     handlePlay(previousTrack);
   };
 
   return (
     <div className="space-y-6 pb-32">
-      {/* Header Section */}
       <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-8 rounded-xl shadow-2xl mb-8">
         <h1 className="text-4xl font-bold text-white mb-4">Music Therapy</h1>
-        <p className="text-white/80">Find peace and relaxation through therapeutic sounds</p>
+        <p className="text-white/80">
+          Find peace and relaxation through therapeutic sounds
+        </p>
       </div>
 
-      {/* Search and Controls */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white/10 p-6 rounded-xl backdrop-blur-sm">
         <Input
           placeholder="Search by title, artist, or category..."
@@ -211,7 +231,6 @@ function MusicTherapy() {
         </div>
       </div>
 
-      {/* Music Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTracks.map((track) => (
           <Card
@@ -244,15 +263,17 @@ function MusicTherapy() {
                   <div className="flex flex-col gap-2">
                     <Button
                       isIconOnly
-                      color={favorites.includes(track.id) ? "danger" : "default"}
+                      color={
+                        favorites.includes(track.id) ? "danger" : "default"
+                      }
                       variant="light"
                       onPress={() => toggleFavorite(track.id)}
-                    >
-
-                    </Button>
+                    ></Button>
                     <Button
                       isIconOnly
-                      color={currentTrack?.id === track.id ? "secondary" : "primary"}
+                      color={
+                        currentTrack?.id === track.id ? "secondary" : "primary"
+                      }
                       variant="shadow"
                       onPress={() => handlePlay(track)}
                       isLoading={loading && currentTrack?.id === track.id}
@@ -271,7 +292,6 @@ function MusicTherapy() {
         ))}
       </div>
 
-      {/* Player Bar */}
       {currentTrack && (
         <Card className="fixed bottom-0 left-0 right-0 bg-background/60 backdrop-blur-md border-t">
           <CardBody className="p-4">
@@ -284,7 +304,9 @@ function MusicTherapy() {
                     className="w-12 h-12 rounded-lg object-cover"
                   />
                   <div>
-                    <h3 className="text-lg font-semibold">{currentTrack.title}</h3>
+                    <h3 className="text-lg font-semibold">
+                      {currentTrack.title}
+                    </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
                       {currentTrack.artist}
                     </p>

@@ -13,12 +13,30 @@ import {
   ModalFooter,
 } from "@nextui-org/react";
 import { scheduleService } from "../services/scheduleService";
-import { auth } from "../services/firebaseConfig";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"; // Add this import
+import { auth } from "../services/firebaseConfig";
 import { CalendarIcon, PlusIcon, EditIcon, TrashIcon } from "lucide-react";
 import ChallengesTabs from "../components/ChallengesTabs";
-
+import { googleCalendarService } from "../services/googleCalendarService";
+import { toast } from "react-toastify";
+const getResourceTypeColor = (type) => {
+  switch (type) {
+    case "article":
+      return "bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900";
+    case "video":
+      return "bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900 dark:to-cyan-900";
+    case "audio":
+      return "bg-gradient-to-r from-green-100 to-teal-100 dark:from-green-900 dark:to-teal-900";
+    case "contact":
+      return "bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900 dark:to-orange-900";
+    case "tool":
+      return "bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900 dark:to-amber-900";
+    default:
+      return "bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900";
+  }
+};
 import MusicTherapy from "./MusicTherapy";
 const resourceCategories = [
   {
@@ -91,11 +109,15 @@ const resourceCategories = [
 ];
 
 function Resources() {
-  const [activeTab, setActiveTab] = useState("resources"); // Add this with your other state declarations
+  const [activeTab, setActiveTab] = useState("resources");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
+  const [googleEvents, setGoogleEvents] = useState([]);
+  const [isCalendarAuthorized, setIsCalendarAuthorized] = useState(false);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [isGoogleAuthorized, setIsGoogleAuthorized] = useState(false);
   const [taskDescription, setTaskDescription] = useState("");
   const [taskDate, setTaskDate] = useState(new Date());
   const [taskTime, setTaskTime] = useState("");
@@ -115,6 +137,91 @@ function Resources() {
 
     return () => unsubscribe();
   }, []);
+  useEffect(() => {
+    setIsGoogleAuthorized(googleCalendarService.isAuthorized());
+  }, []);
+  const handleGoogleCalendarAuth = async () => {
+    try {
+      setLoading(true); // Add loading state
+      const token = await googleCalendarService.authorize();
+      setIsGoogleAuthorized(true);
+      await fetchGoogleEvents();
+      toast.success("Successfully connected to Google Calendar");
+    } catch (error) {
+      console.error("Google Calendar authorization error:", error);
+      toast.error("Failed to connect to Google Calendar");
+      setIsGoogleAuthorized(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchGoogleEvents = async () => {
+    if (!isGoogleAuthorized) return;
+
+    try {
+      setLoading(true);
+      const events = await googleCalendarService.getEvents(new Date());
+      console.log("Fetched events:", events); // Debug log
+      setGoogleEvents(events || []);
+    } catch (error) {
+      console.error("Error fetching Google Calendar events:", error);
+      toast.error("Failed to fetch calendar events");
+
+      if (
+        error.message.includes("auth") ||
+        error.message.includes("unauthorized")
+      ) {
+        setIsGoogleAuthorized(false);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        setIsGoogleAuthorized(false);
+        googleCalendarService.clearAuthorization();
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+  const syncTaskWithGoogle = async (task) => {
+    if (!auth.currentUser) {
+      toast.error("Please sign in first");
+      return;
+    }
+
+    try {
+      const event = {
+        summary: task.title,
+        description: task.description,
+        start: {
+          dateTime: `${task.date}T${task.time}:00`,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+        end: {
+          dateTime: new Date(
+            new Date(`${task.date}T${task.time}`).getTime() + 3600000
+          ).toISOString(),
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      };
+
+      await googleCalendarService.addEvent(event);
+      toast.success("Task added to Google Calendar");
+      fetchGoogleEvents();
+    } catch (error) {
+      console.error("Error syncing with Google Calendar:", error);
+      toast.error("Failed to add task to Google Calendar");
+    }
+  };
+  useEffect(() => {
+    if (isGoogleAuthorized) {
+      fetchGoogleEvents();
+    }
+  }, [isGoogleAuthorized]);
 
   const fetchSchedule = async () => {
     if (!userId) return;
@@ -192,7 +299,175 @@ function Resources() {
       fetchSchedule();
     }
   }, [userId, taskDate]);
+  const ScheduleSection = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          <DatePicker
+            selected={taskDate}
+            onChange={(date) => setTaskDate(date)}
+            customInput={
+              <Button isDisabled auto light>
+                <CalendarIcon className="mr-2" />
+                {taskDate.toLocaleDateString()}
+              </Button>
+            }
+          />
+        </div>
+        <div className="flex gap-2">
+          {!isGoogleAuthorized && (
+            <Button
+              color="secondary"
+              variant="bordered"
+              onPress={handleGoogleCalendarAuth}
+              startContent={<CalendarIcon />}
+            >
+              Connect Google Calendar
+            </Button>
+          )}
+          <Button color="primary" auto onPress={() => setIsModalOpen(true)}>
+            <PlusIcon className="mr-2" />
+            Add Task
+          </Button>
+        </div>
+      </div>
 
+      {loading ? (
+        <div className="flex justify-center py-4">
+          <Spinner size="lg" />
+        </div>
+      ) : (
+        <>
+          {isGoogleAuthorized && googleEvents?.length > 0 && (
+            <div className="space-y-2">
+              <div className="space-y-2">
+                <h4 className="text-lg font-semibold">
+                  Upcoming Calendar Events (Next 7 Days)
+                </h4>
+                {loading ? (
+                  <div className="flex justify-center py-4">
+                    <Spinner size="lg" />
+                  </div>
+                ) : googleEvents?.length > 0 ? (
+                  googleEvents.map((event) => (
+                    <Card
+                      key={event.id}
+                      className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900"
+                    >
+                      <CardBody>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h5 className="font-medium">{event.summary}</h5>
+                            <div className="text-sm text-gray-500 space-y-1">
+                              <p>
+                                {new Date(
+                                  event.start.dateTime || event.start.date
+                                ).toLocaleDateString()}{" "}
+                                at{" "}
+                                {event.start.dateTime
+                                  ? new Date(
+                                      event.start.dateTime
+                                    ).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : "All Day"}
+                              </p>
+                              {event.location && (
+                                <p className="text-sm text-gray-500">
+                                  📍 {event.location}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              as="a"
+                              href={event.htmlLink}
+                              target="_blank"
+                              color="secondary"
+                              size="sm"
+                            >
+                              View in Calendar
+                            </Button>
+                          </div>
+                        </div>
+                      </CardBody>
+                    </Card>
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500 py-4">
+                    No upcoming events in the next 7 days
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <h4 className="text-lg font-semibold">Your Tasks</h4>
+            {schedule.length > 0 ? (
+              schedule.map((task) => (
+                <TaskCard
+                  key={task._id}
+                  task={task}
+                  onSync={() => syncTaskWithGoogle(task)}
+                  isCalendarAuthorized={isGoogleAuthorized}
+                />
+              ))
+            ) : (
+              <p className="text-center text-gray-500 py-4">
+                No tasks for the selected date
+              </p>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+  const TaskCard = ({ task, onSync, isCalendarAuthorized }) => (
+    <Card className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow">
+      <CardBody>
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-xl font-semibold">{task.title}</h3>
+            <p className="text-sm text-gray-500">{task.time}</p>
+            {task.description && (
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                {task.description}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            {isGoogleAuthorized && ( // Changed from isCalendarAuthorized
+              <Button
+                color="secondary"
+                auto
+                onPress={onSync}
+                startContent={<CalendarIcon className="h-4 w-4" />}
+              >
+                Add to Google Calendar
+              </Button>
+            )}
+            <Button
+              color={task.completed ? "success" : "warning"}
+              auto
+              onPress={() => handleCompleteTask(task._id)}
+            >
+              {task.completed ? "Completed" : "Mark as Completed"}
+            </Button>
+            <Button
+              color="error"
+              auto
+              onPress={() => handleDeleteTask(task._id)}
+            >
+              <TrashIcon />
+            </Button>
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  );
   return (
     <div className="max-w-6xl mx-auto space-y-8 p-4">
       <div className="flex justify-between items-center mb-8">
@@ -210,10 +485,9 @@ function Resources() {
         )}
       </div>
 
-      {/* Main Navigation Tabs */}
       <div className="flex space-x-4 mb-6">
         <Button
-          color={activeTab === "resources" ? "primary" : "default"}
+          color={activeTab === "resources" ? "secondary" : "default"}
           variant={activeTab === "resources" ? "shadow" : "light"}
           onPress={() => setActiveTab("resources")}
           className="flex-1 md:flex-none"
@@ -221,7 +495,7 @@ function Resources() {
           Health Resources
         </Button>
         <Button
-          color={activeTab === "music" ? "primary" : "default"}
+          color={activeTab === "music" ? "secondary" : "default"}
           variant={activeTab === "music" ? "shadow" : "light"}
           onPress={() => setActiveTab("music")}
           className="flex-1 md:flex-none"
@@ -230,7 +504,6 @@ function Resources() {
         </Button>
       </div>
 
-      {/* Tab Content */}
       {activeTab === "resources" ? (
         <>
           {!selectedCategory ? (
@@ -240,7 +513,7 @@ function Resources() {
                   key={category.id}
                   isPressable
                   onPress={() => setSelectedCategory(category)}
-                  className="hover:scale-105 transition-transform bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-700 dark:to-primary-800"
+                  className="hover:scale-105 transition-transform bg-gradient-to-br from-blue-100 to-indigo-200 dark:from-blue-800 dark:to-indigo-900"
                 >
                   <CardBody className="p-6">
                     <h2 className="text-2xl font-semibold mb-2">
@@ -261,7 +534,9 @@ function Resources() {
               {selectedCategory.resources.map((resource) => (
                 <Card
                   key={resource.id}
-                  className="bg-gradient-to-r from-secondary-100 to-secondary-200 dark:from-secondary-700 dark:to-secondary-800"
+                  className={`${getResourceTypeColor(
+                    resource.type
+                  )} transition-all hover:shadow-lg`}
                 >
                   <CardBody className="p-4">
                     <div className="flex justify-between items-center">
@@ -274,7 +549,7 @@ function Resources() {
                         </p>
                       </div>
                       <Button
-                        color="primary"
+                        color="secondary"
                         variant="shadow"
                         as="a"
                         href={resource.link}
@@ -314,10 +589,7 @@ function Resources() {
 
           <Card className="mt-8 bg-gradient-to-br from-tertiary-100 to-tertiary-200 dark:from-tertiary-700 dark:to-tertiary-800">
             <CardBody>
-              <div
-                className="flex justify-between items-center cursor-pointer"
-                onPress={() => setIsScheduleExpanded(!isScheduleExpanded)}
-              >
+              <div className="flex justify-between items-center mb-4">
                 <h2 className="text-3xl font-semibold">Your Daily Schedule</h2>
                 <Button
                   auto
@@ -327,90 +599,7 @@ function Resources() {
                   {isScheduleExpanded ? "Collapse" : "Expand"}
                 </Button>
               </div>
-              {isScheduleExpanded && (
-                <div className="mt-4">
-                  <div className="mb-6 flex justify-between items-center">
-                    <div className="flex items-center space-x-4">
-                      <DatePicker
-                        selected={taskDate}
-                        onChange={(date) => setTaskDate(date)}
-                        customInput={
-                          <Button isDisabled auto light>
-                            <CalendarIcon className="mr-2" />
-                            {taskDate.toLocaleDateString()}
-                          </Button>
-                        }
-                      />
-                    </div>
-                    <Button
-                      color="primary"
-                      auto
-                      onPress={() => setIsModalOpen(true)}
-                    >
-                      <PlusIcon className="mr-2" />
-                      Add Task
-                    </Button>
-                  </div>
-                  {loading ? (
-                    <div className="flex justify-center">
-                      <Spinner size="xl" />
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {schedule.length > 0 ? (
-                        schedule.map((task) => (
-                          <Card
-                            key={task._id}
-                            className="bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow"
-                          >
-                            <CardBody>
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <h3 className="text-xl font-semibold">
-                                    {task.title}
-                                  </h3>
-                                  <p className="text-sm text-gray-500">
-                                    {task.time}
-                                  </p>
-                                  {task.description && (
-                                    <p className="text-gray-600 dark:text-gray-400 mt-2">
-                                      {task.description}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Button
-                                    color={
-                                      task.completed ? "success" : "warning"
-                                    }
-                                    auto
-                                    onPress={() => handleCompleteTask(task._id)}
-                                  >
-                                    {task.completed
-                                      ? "Completed"
-                                      : "Mark as Completed"}
-                                  </Button>
-                                  <Button
-                                    color="error"
-                                    auto
-                                    onPress={() => handleDeleteTask(task._id)}
-                                  >
-                                    <TrashIcon />
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardBody>
-                          </Card>
-                        ))
-                      ) : (
-                        <p className="text-center text-gray-500">
-                          No tasks for the selected date
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+              {isScheduleExpanded && <ScheduleSection />}
             </CardBody>
           </Card>
 
@@ -433,7 +622,6 @@ function Resources() {
         <MusicTherapy />
       )}
 
-      {/* Task Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => {

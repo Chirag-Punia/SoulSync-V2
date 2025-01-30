@@ -1,4 +1,3 @@
-// components/Chat.jsx
 import { useState, useEffect, useRef } from "react";
 import { Card, CardBody, Input, Button, Avatar } from "@nextui-org/react";
 import { localChatService } from "../services/localChatService";
@@ -18,14 +17,12 @@ const Chat = ({ currentUser, recipientUser, onClose }) => {
   useEffect(() => {
     if (!currentUser || !recipientUser) return;
 
-    // Create chat room ID
     const chatRoomId = localChatService.createChatRoomId(
       currentUser.id,
       recipientUser.id
     );
     chatRoomRef.current = chatRoomId;
 
-    // Subscribe to messages
     const unsubscribe = localChatService.subscribeToMessages(
       chatRoomId,
       (newMessages) => {
@@ -53,7 +50,6 @@ const Chat = ({ currentUser, recipientUser, onClose }) => {
 
   return (
     <Card className="fixed right-0 bottom-0 w-96 h-[500px] bg-gradient-to-br from-gray-900 to-gray-800 rounded-tl-lg shadow-xl">
-      {/* Chat Header */}
       <div className="p-4 border-b border-gray-700 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <Avatar
@@ -74,7 +70,6 @@ const Chat = ({ currentUser, recipientUser, onClose }) => {
         </Button>
       </div>
 
-      {/* Messages Area */}
       <div className="h-[380px] overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => (
           <div
@@ -103,7 +98,6 @@ const Chat = ({ currentUser, recipientUser, onClose }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
         <div className="flex space-x-2">
           <Input

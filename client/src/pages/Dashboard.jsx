@@ -25,7 +25,6 @@ import { toast } from "react-toastify";
 import ExerciseTimer from "./ExerciseTimer";
 import { getAuth } from "firebase/auth";
 
-// Sample mood data
 const sampleMoodData = [
   { date: "2024-02-01", mood: 7 },
   { date: "2024-02-02", mood: 6 },
@@ -136,8 +135,6 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1b1e] to-[#2d1b4b] text-white p-8">
-      {/* Header Section */}
-      {/* Header Section */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -213,7 +210,6 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Health Platforms Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
         {[
           {
@@ -263,7 +259,6 @@ function Dashboard() {
         `}
             >
               <CardBody className="p-8">
-                {/* Header Section */}
                 <div className="flex items-center space-x-4 mb-6">
                   <div
                     className={`
@@ -285,7 +280,6 @@ function Dashboard() {
                   </div>
                 </div>
 
-                {/* Features List */}
                 <div className="space-y-3 mb-6">
                   {platform.features.map((feature, index) => (
                     <div
@@ -303,7 +297,6 @@ function Dashboard() {
                   ))}
                 </div>
 
-                {/* Connection Status */}
                 <div
                   className={`
             mt-auto flex items-center justify-between
@@ -352,7 +345,6 @@ function Dashboard() {
         ))}
       </div>
 
-      {/* Quick Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           {
@@ -404,9 +396,7 @@ function Dashboard() {
         ))}
       </div>
 
-      {/* Analytics Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        {/* Mood Tracker */}
         <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
           <CardBody className="p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center">
@@ -444,7 +434,6 @@ function Dashboard() {
           </CardBody>
         </Card>
 
-        {/* Stress Level */}
         <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
           <CardBody className="p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center">
@@ -494,7 +483,6 @@ function Dashboard() {
         </Card>
       </div>
 
-      {/* Current Mood Section */}
       <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800 mb-8">
         <CardBody className="p-8">
           <h3 className="text-2xl font-semibold mb-6 flex items-center">
@@ -528,9 +516,7 @@ function Dashboard() {
         </CardBody>
       </Card>
 
-      {/* Footer Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Weekly Progress */}
         <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
           <CardBody className="p-6">
             <div className="flex items-center text-xl font-semibold mb-4">
@@ -550,7 +536,6 @@ function Dashboard() {
           </CardBody>
         </Card>
 
-        {/* Mindfulness Exercise */}
         <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
           <CardBody className="p-6">
             <div className="flex items-center text-xl font-semibold mb-4">
@@ -575,7 +560,6 @@ function Dashboard() {
           </CardBody>
         </Card>
 
-        {/* Support Groups */}
         <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
           <CardBody className="p-6">
             <div className="flex items-center text-xl font-semibold mb-4">

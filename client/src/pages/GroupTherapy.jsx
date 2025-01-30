@@ -1,4 +1,3 @@
-// pages/GroupTherapy.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -30,13 +29,13 @@ const GroupTherapy = () => {
   const createSession = () => {
     const newRoomId = uuidv4();
     setIsHost(true);
-    // navigate(`/group-therapy/${newRoomId}`);
+    navigate(`/group-therapy/${newRoomId}`);
   };
 
   const joinSession = () => {
     if (roomId) {
       setIsHost(false);
-      // navigate(`/group-therapy/${roomId}`);
+      navigate(`/group-therapy/${roomId}`);
     }
   };
 
@@ -141,4 +140,3 @@ const GroupTherapy = () => {
 };
 
 export default GroupTherapy;
-

@@ -41,7 +41,6 @@ function ChatBot() {
   };
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Add this function to toggle sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -194,7 +193,6 @@ function ChatBot() {
 
   return (
     <div className="h-[calc(100vh-64px)] relative bg-gradient-to-br from-[#0F172A] to-[#1E293B]">
-      {/* Mobile Sidebar Toggle */}
       <Button
         isIconOnly
         className="md:hidden fixed top-4 left-4 z-50 bg-gradient-to-r from-purple-600 to-pink-600"
@@ -204,7 +202,6 @@ function ChatBot() {
       </Button>
 
       <div className="h-full flex">
-        {/* Sidebar */}
         <AnimatePresence>
           {isSidebarOpen && (
             <motion.div
@@ -276,7 +273,6 @@ function ChatBot() {
           )}
         </AnimatePresence>
 
-        {/* Main Chat Area */}
         <div className="flex-1 h-full">
           <Card className="h-full bg-black/20 backdrop-blur-xl border border-white/10 rounded-none md:rounded-lg">
             <CardBody className="p-4 flex flex-col h-full">
@@ -342,7 +338,6 @@ function ChatBot() {
                 </div>
               </ScrollShadow>
 
-              {/* Input Area */}
               <div className="flex gap-2 pt-4 border-t border-white/10">
                 <Input
                   value={newMessage}

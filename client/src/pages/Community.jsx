@@ -23,7 +23,7 @@ import {
   FaTimes,
   FaEllipsisV,
 } from "react-icons/fa";
-import {toast} from "react-toastify";
+import { toast } from "react-toastify";
 import { IoChatboxEllipses } from "react-icons/io5";
 import { motion } from "framer-motion";
 import Chat from "./Chat";
@@ -39,15 +39,12 @@ function Community() {
   const [chatMessage, setChatMessage] = useState("");
   const [activeChats, setActiveChats] = useState([]);
 
-  // Current user info (you can get this from your auth system)
   const currentUser = {
-    id: "Chirag-Punia", // Using login as ID
+    id: "Chirag-Punia",
     userName: "Chirag Punia",
-    // Add other user details as needed
   };
 
   const handleStartChat = (user) => {
-    // Check if chat is already open
     if (!activeChats.find((chat) => chat.id === user.id)) {
       setActiveChats([...activeChats, user]);
     }
@@ -108,7 +105,6 @@ function Community() {
     try {
       const userId = auth.currentUser.uid;
 
-      // Optimistic update
       setPosts(
         posts.map((post) => {
           if (post._id === postId) {
@@ -124,14 +120,12 @@ function Community() {
         })
       );
 
-      // Make API call
       const updatedPost = await postService.likePost(postId, userId);
 
-      // Update with server response
       setPosts(posts.map((post) => (post._id === postId ? updatedPost : post)));
     } catch (error) {
       console.error("Failed to like post:", error);
-      // Revert optimistic update if failed
+
       await fetchPosts();
       toast.error("Failed to update like");
     }
@@ -165,9 +159,8 @@ function Community() {
   const startChat = (user) => {
     setSelectedUser(user);
     setIsChatOpen(true);
-    // Fetch chat history here
+
     setMessages([
-      // Sample messages - replace with actual chat history
       { sender: user.id, content: "Hey there!", timestamp: new Date() },
       {
         sender: auth.currentUser.uid,
@@ -180,7 +173,6 @@ function Community() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0F172A] to-[#1E293B] text-white p-8">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -194,7 +186,6 @@ function Community() {
           </p>
         </motion.div>
 
-        {/* Create Post Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -239,7 +230,6 @@ function Community() {
           </Card>
         </motion.div>
 
-        {/* Posts */}
         <div className="space-y-6">
           {posts.map((post, index) => (
             <motion.div
@@ -250,7 +240,6 @@ function Community() {
             >
               <Card className="backdrop-blur-xl bg-white/10 border border-white/20 hover:border-purple-500/50 transition-all">
                 <CardBody className="space-y-4 p-6">
-                  {/* Post Header */}
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                       <Avatar
@@ -272,7 +261,7 @@ function Community() {
                       onPress={() =>
                         handleStartChat({
                           id: post.userId,
-                          userName: post.userName, // Make sure this is available in your post data
+                          userName: post.userName,
                         })
                       }
                       className="text-purple-400 hover:text-purple-300"
@@ -281,7 +270,6 @@ function Community() {
                     </Button>
                   </div>
 
-                  {/* Post Content */}
                   <div>
                     <h3 className="text-xl font-semibold text-white">
                       {post.title}
@@ -289,7 +277,6 @@ function Community() {
                     <p className="text-gray-300 mt-2">{post.content}</p>
                   </div>
 
-                  {/* Post Actions */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <Button
@@ -347,8 +334,8 @@ function Community() {
                                         onPress={() =>
                                           handleStartChat({
                                             id: comment.userId,
-                                            userName: comment.userName, // Using commenter's name
-                                            isCommenter: true, // Optional: to differentiate between post author and commenter
+                                            userName: comment.userName,
+                                            isCommenter: true,
                                           })
                                         }
                                       >
@@ -362,7 +349,7 @@ function Community() {
                                 </div>
                               ))}
                             </div>
-                            {/* Comment Input Section */}
+
                             <div className="p-4 border-t border-gray-700">
                               <div className="flex gap-2">
                                 <Input
@@ -405,7 +392,6 @@ function Community() {
         </div>
       </div>
 
-      {/* Chat Drawer */}
       <Drawer
         open={isChatOpen}
         onClose={() => setIsChatOpen(false)}
@@ -414,7 +400,6 @@ function Community() {
         className="bg-[#111827]"
       >
         <div className="h-full flex flex-col">
-          {/* Chat Header */}
           <div className="p-4 border-b border-gray-800 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Avatar
@@ -435,7 +420,6 @@ function Community() {
             </Button>
           </div>
 
-          {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.map((message, index) => (
               <div
@@ -462,7 +446,6 @@ function Community() {
             ))}
           </div>
 
-          {/* Chat Input */}
           <div className="p-4 border-t border-gray-800">
             <div className="flex gap-2">
               <Input

@@ -108,7 +108,6 @@ const EmotionDetector = () => {
           details: emotions,
         });
 
-        // Store emotion history
         const emotionHistory = JSON.parse(
           localStorage.getItem("emotionHistory") || "[]"
         );
@@ -120,7 +119,7 @@ const EmotionDetector = () => {
         localStorage.setItem(
           "emotionHistory",
           JSON.stringify(emotionHistory.slice(-10))
-        ); // Keep last 10 entries
+        );
 
         toast.success(`Detected emotion: ${dominantEmotion}`);
       } else {
@@ -169,7 +168,6 @@ const EmotionDetector = () => {
 
   return (
     <div className="space-y-8">
-      {/* Main Controls */}
       <Card className="p-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-white/20">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2">
@@ -209,7 +207,6 @@ const EmotionDetector = () => {
         </div>
       </Card>
 
-      {/* Features Showcase */}
       {showFeatures && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
@@ -235,7 +232,6 @@ const EmotionDetector = () => {
         </div>
       )}
 
-      {/* Main Detection Modal */}
       <Modal
         isOpen={isOpen}
         onClose={() => {
@@ -250,7 +246,6 @@ const EmotionDetector = () => {
           footer: "border-t border-white/10",
         }}
       >
-        // ... previous imports and code remain same ...
         <ModalContent>
           <ModalHeader className="flex flex-col gap-1">
             <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -259,7 +254,6 @@ const EmotionDetector = () => {
           </ModalHeader>
           <ModalBody>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Upload/Image Section */}
               <div className="space-y-4 max-h-[500px] overflow-hidden">
                 {!selectedImage ? (
                   <motion.div
@@ -315,7 +309,6 @@ const EmotionDetector = () => {
                 )}
               </div>
 
-              {/* Analysis Section */}
               <div className="space-y-4 max-h-[500px] overflow-y-auto">
                 {!emotion && selectedImage && (
                   <Button
@@ -334,7 +327,6 @@ const EmotionDetector = () => {
                     animate={{ opacity: 1 }}
                     className="space-y-6"
                   >
-                    {/* Summary Card */}
                     <Card className="bg-white/5 p-6">
                       <div className="flex items-center space-x-4 mb-6">
                         <div className="p-4 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20">
@@ -354,10 +346,9 @@ const EmotionDetector = () => {
                         </div>
                       </div>
 
-                      {/* Emotion Details */}
                       <div className="space-y-4">
                         {Object.entries(emotion.details)
-                          .sort(([, a], [, b]) => b - a) // Sort by value descending
+                          .sort(([, a], [, b]) => b - a)
                           .map(([emo, value]) => (
                             <Tooltip
                               key={emo}
@@ -401,7 +392,6 @@ const EmotionDetector = () => {
                       </div>
                     </Card>
 
-                    {/* Recommendations Card */}
                     <Card className="bg-white/5 p-6">
                       <h4 className="text-lg font-semibold text-white mb-4">
                         Recommendations

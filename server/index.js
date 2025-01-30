@@ -10,7 +10,6 @@ import profileRoutes from "./routes/profile.js";
 import { authenticateUser } from "./middleware/firebaseAuthMiddleware.js";
 import fitbitRoutes from "./routes/fitBitRoutes.js";
 import googleFitRoutes from "./routes/googleFitRoutes.js";
-import therapyRoutes from "./routes/therapy.js";
 dotenv.config();
 
 const app = express();
@@ -27,7 +26,6 @@ app.use(
 );
 app.use(express.json());
 
-// Routes
 app.use("/api/chat", authenticateUser, chatRouter);
 app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);
@@ -35,7 +33,6 @@ app.use("/api/schedule", scheduleRoutes);
 app.use("/api/data", authenticateUser, profileRoutes);
 app.use("/api/gfit", googleFitRoutes);
 app.use("/api/fitbit", fitbitRoutes);
-app.use("/api/therapy", therapyRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

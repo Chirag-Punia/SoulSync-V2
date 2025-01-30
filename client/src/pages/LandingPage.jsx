@@ -107,7 +107,6 @@ function LandingPage() {
         transition={{ duration: 1 }}
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative pt-8"
       >
-        {/* Current DateTime Display */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -117,7 +116,6 @@ function LandingPage() {
           {currentDateTime} UTC
         </motion.div>
 
-        {/* Hero Section */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -172,7 +170,7 @@ function LandingPage() {
             />
           </motion.div>
         </motion.div>
-        {/* Stats Section */}
+
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -215,7 +213,6 @@ function LandingPage() {
           ))}
         </motion.div>
 
-        {/* Features Section */}
         <div ref={learnRef} className="py-16">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -295,7 +292,6 @@ function LandingPage() {
             ))}
           </motion.div>
 
-          {/* Additional Features Grid */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -324,7 +320,7 @@ function LandingPage() {
             ))}
           </motion.div>
         </div>
-        {/* Daily Wellness Section */}
+
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -391,7 +387,6 @@ function LandingPage() {
           </motion.div>
         </motion.div>
 
-        {/* Pricing Section */}
         <div ref={plansRef} className="py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -537,7 +532,6 @@ function LandingPage() {
             ))}
           </motion.div>
 
-          {/* Money Back Guarantee */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -549,9 +543,7 @@ function LandingPage() {
             </p>
           </motion.div>
         </div>
-        {/* User Info Banner */}
 
-        {/* Testimonials Section */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -563,7 +555,6 @@ function LandingPage() {
             Voices of Our Community
           </h2>
 
-          {/* Featured Testimonial */}
           <motion.div
             variants={itemVariants}
             className="max-w-4xl mx-auto mb-16"
@@ -603,7 +594,6 @@ function LandingPage() {
             </Card>
           </motion.div>
 
-          {/* Testimonial Grid */}
           <motion.div
             variants={containerVariants}
             className="grid md:grid-cols-3 gap-8"
@@ -670,7 +660,6 @@ function LandingPage() {
             ))}
           </motion.div>
 
-          {/* Social Proof */}
           <motion.div
             variants={containerVariants}
             className="mt-16 text-center"
@@ -678,13 +667,10 @@ function LandingPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               Trusted by individuals and organizations worldwide
             </p>
-            <div className="flex flex-wrap justify-center gap-8 opacity-50">
-              {/* Add partner/client logos here */}
-            </div>
+            <div className="flex flex-wrap justify-center gap-8 opacity-50"></div>
           </motion.div>
         </motion.div>
 
-        {/* CTA Section */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -729,7 +715,6 @@ function LandingPage() {
             </div>
           </Card>
 
-          {/* Footer CTA */}
           <motion.div variants={itemVariants} className="mt-8 text-center">
             <p className="text-gray-600 dark:text-gray-400">
               Questions? We're here to help 24/7

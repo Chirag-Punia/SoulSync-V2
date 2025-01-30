@@ -1,6 +1,5 @@
-// components/ErrorBoundary.jsx
-import React from 'react';
-import { Button } from '@nextui-org/react';
+import React from "react";
+import { Button } from "@nextui-org/react";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -13,7 +12,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
 
   render() {
@@ -25,13 +24,13 @@ class ErrorBoundary extends React.Component {
               Something went wrong
             </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {this.state.error?.message || 'An unexpected error occurred'}
+              {this.state.error?.message || "An unexpected error occurred"}
             </p>
             <Button
               color="primary"
               onPress={() => {
                 this.setState({ hasError: false });
-                window.location.href = '/group-therapy';
+                window.location.href = "/group-therapy";
               }}
             >
               Return to Sessions

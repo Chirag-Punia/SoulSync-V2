@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --ext .js,.jsx",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@googleapis/calendar": "^9.7.9",
     "@nextui-org/react": "^2.6.11",
+    "@react-oauth/google": "^0.12.1",
     "agora-rtc-sdk-ng": "^4.23.1",
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.1",
@@ -37,13 +39,14 @@
     "vercel": "^32.3.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.1",
+    "@babel/eslint-parser": "^7.26.5",
+    "@eslint/js": "^9.19.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.17",
-    "eslint": "^9.9.1",
-    "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.11",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "globals": "^15.14.0",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "vite": "^5.4.2"

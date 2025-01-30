@@ -1,8 +1,7 @@
-// services/localChatService.js
 class LocalChatService {
   constructor() {
-    this.messages = new Map(); // Store messages by chatRoomId
-    this.subscribers = new Map(); // Store subscribers by chatRoomId
+    this.messages = new Map();
+    this.subscribers = new Map();
   }
 
   createChatRoomId(user1Id, user2Id) {
@@ -22,7 +21,6 @@ class LocalChatService {
 
     this.messages.get(chatRoomId).push(newMessage);
 
-    // Notify subscribers
     if (this.subscribers.has(chatRoomId)) {
       this.subscribers
         .get(chatRoomId)
@@ -39,12 +37,10 @@ class LocalChatService {
 
     this.subscribers.get(chatRoomId).add(callback);
 
-    // Initial messages
     if (this.messages.has(chatRoomId)) {
       callback(this.messages.get(chatRoomId));
     }
 
-    // Return unsubscribe function
     return () => {
       this.subscribers.get(chatRoomId).delete(callback);
     };
