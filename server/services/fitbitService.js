@@ -92,7 +92,6 @@ export const fetchFitbitDataService = async (user) => {
     );
 
     const responses = await Promise.all(requests);
-
     const processedData = {
       user: userData._id,
       activities: responses[0].error ? null : responses[0].data,

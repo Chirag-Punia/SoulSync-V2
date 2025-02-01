@@ -2,8 +2,8 @@ import * as AuthService from "../services/authService.js";
 
 export const loginUser = async (req, res) => {
   try {
-    const { firebaseUid, email, displayName } = req.body;
-    const user = await AuthService.loginUser(firebaseUid, email, displayName);
+    const { firebaseUid, email, displayName ,photoURL} = req.body;
+    const user = await AuthService.loginUser(firebaseUid, email, displayName,photoURL);
     res.status(200).json({
       success: true,
       message: "User details saved/updated successfully",

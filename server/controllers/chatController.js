@@ -1,15 +1,14 @@
-import { GeminiLLM } from "../services/geminiLLM.js";
+import { MentalHealthLLM } from "../services/mentalHealthLLM.js";
 import Chat from "../models/Chat.js";
 
 export class ChatController {
   constructor() {
-    this.llm = new GeminiLLM();
+    this.llm = new MentalHealthLLM();
   }
-
   setLLM(llmType) {
     switch (llmType) {
-      case "gemini":
-        this.llm = new GeminiLLM();
+      case "mental-health":
+        this.llm = new MentalHealthLLM();
         break;
       default:
         throw new Error("Unsupported LLM type");
@@ -54,31 +53,37 @@ export class ChatController {
           .status(400)
           .json({ error: "User ID and message are required" });
       }
-      if (!message) {
-        return res.status(400).json({ error: " message are required" });
-      }
 
-      const botResponse = await this.llm.generateResponse(message);
+      // Get response from Flask API
+      const response = await this.llm.generateResponse(message);
 
       let chat = await Chat.findOne({ userId });
 
       if (!chat) {
         chat = new Chat({ userId, messages: [] });
       }
+
+      // Save user message
       chat.messages.push({
         text: message,
         sender: "user",
         timestamp: new Date(),
       });
+
+      // Save bot response with emotion data
       chat.messages.push({
-        text: botResponse,
+        text: response.response,
         sender: "bot",
         timestamp: new Date(),
+        emotion: response.emotion, // Store emotion analysis from Flask API
       });
+
       await chat.save();
-      res.json({ response: botResponse });
+
+      res.json(response);
     } catch (error) {
       console.error("Chat error:", error);
+      res.status(500).json({ error: "Failed to process chat message" });
     }
   };
   saveChat = async (userId, messages) => {

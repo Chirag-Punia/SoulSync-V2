@@ -10,10 +10,13 @@ import profileRoutes from "./routes/profile.js";
 import { authenticateUser } from "./middleware/firebaseAuthMiddleware.js";
 import fitbitRoutes from "./routes/fitBitRoutes.js";
 import googleFitRoutes from "./routes/googleFitRoutes.js";
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
+import moodRoutes from "./routes/moods.js";
+
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5002;
+const PORT = 8080;
 
 connectDB();
 
@@ -33,6 +36,8 @@ app.use("/api/schedule", scheduleRoutes);
 app.use("/api/data", authenticateUser, profileRoutes);
 app.use("/api/gfit", googleFitRoutes);
 app.use("/api/fitbit", fitbitRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/moods", moodRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

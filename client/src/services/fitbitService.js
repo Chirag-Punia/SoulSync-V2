@@ -5,9 +5,12 @@ export const FitbitService = {
   async getOAuthUrl() {
     try {
       const token = await getAuthToken();
-      const response = await api.get("/fitbit/oauth-url", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get(
+        `${import.meta.env.VITE_API_BASE_URL}/fitbit/oauth-url`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data.authUrl;
     } catch (error) {
       console.error("Error getting Fitbit OAuth URL:", error);
@@ -18,7 +21,7 @@ export const FitbitService = {
   async fetchFitbitData() {
     try {
       const token = await getAuthToken();
-      const response = await api.get("/fitbit/data", {
+      const response = await api.get(`${import.meta.env.VITE_API_BASE_URL}/fitbit/data`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;

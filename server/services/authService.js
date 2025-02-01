@@ -1,17 +1,18 @@
 import User from "../models/User.js";
 
-export const loginUser = async (firebaseUid, email, displayName) => {
+export const loginUser = async (firebaseUid, email, displayName,photoURL) => {
   let user = await User.findOne({ firebaseUid });
-
   if (user) {
     user.email = email;
     user.displayName = displayName || user.displayName;
     user.updatedAt = new Date();
+    user.photoURL = photoURL
   } else {
     user = new User({
       firebaseUid,
       email,
       displayName,
+      photoURL,
     });
   }
 

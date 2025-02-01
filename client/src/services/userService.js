@@ -9,6 +9,7 @@ export const userService = {
         firebaseUid: user.uid,
         email: user.email,
         displayName: user.displayName || user.email.split("@")[0],
+        photoURL: user.photoURL || null,
       };
 
       await api.post("/users/login", userData);

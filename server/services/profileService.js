@@ -27,6 +27,7 @@ export const getUserProfile = async (firebaseUid) => {
     isAnonymous: user.isAnonymous,
     preferences: user.preferences,
     connectedAccounts: user.connectedAccounts,
+    photoURL: user.photoURL,
   };
 };
 

@@ -7,12 +7,15 @@ const userSchema = new mongoose.Schema({
   googleFitRefreshToken: { type: String },
   fitbitAccessToken: { type: String },
   email: { type: String, required: true, unique: true },
+  photoURL: { type: String, default: null },
   isAnonymous: { type: Boolean, default: false },
   preferences: {
     notifications: { type: Boolean, default: false },
     shareData: { type: Boolean, default: false },
     darkMode: { type: Boolean, default: true },
   },
+  isSubscribedToAffirmations: { type: Boolean, default: false },
+  snsSubscriptionArn: { type: String },
   connectedAccounts: {
     google: { type: Boolean, default: false },
     facebook: { type: Boolean, default: false },

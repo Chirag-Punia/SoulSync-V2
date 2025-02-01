@@ -44,6 +44,10 @@ function Dashboard() {
   const [isAppleHealthConnected, setIsAppleHealthConnected] = useState(false);
   const [isFitbitConnected, setIsFitbitConnected] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [moodHistory, setMoodHistory] = useState([]);
+  const [showMoodHistory, setShowMoodHistory] = useState(false);
   const navigator = useNavigate();
 
   useEffect(() => {
@@ -68,6 +72,7 @@ function Dashboard() {
         if (userInfoResponse.ok) {
           const userInfo = await userInfoResponse.json();
           setUser(userInfo);
+          setIsSubscribed(userInfo.isSubscribedToAffirmations);
           setLoading(false);
         }
 
@@ -83,6 +88,20 @@ function Dashboard() {
         const fitbitResponse = await FitbitService.fetchFitbitData();
         if (fitbitResponse.user) {
           setIsFitbitConnected(true);
+        }
+
+        const moodHistoryResponse = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/moods/history`,
+          {
+            headers: {
+              Authorization: `Bearer ${await user.getIdToken()}`,
+            },
+          }
+        );
+        if (moodHistoryResponse.ok) {
+          const history = await moodHistoryResponse.json();
+          setMoodHistory(history);
+          setMoodData(history);
         }
       } catch (error) {
         console.error("Error initializing dashboard:", error.message);
@@ -129,6 +148,55 @@ function Dashboard() {
     setCurrentMood(parseInt(event.target.value, 10));
   };
 
+  const logMood = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user) {
+      toast.error("Please sign in to log mood");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/moods/log`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${await user.getIdToken()}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mood: currentMood,
+            timestamp: new Date().toISOString(),
+          }),
+        }
+      );
+
+      if (response.ok) {
+        toast.success("Mood logged successfully!");
+        const historyResponse = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/moods/history`,
+          {
+            headers: {
+              Authorization: `Bearer ${await user.getIdToken()}`,
+            },
+          }
+        );
+        if (historyResponse.ok) {
+          const history = await historyResponse.json();
+          setMoodHistory(history);
+          setMoodData(history);
+        }
+      } else {
+        throw new Error("Failed to log mood");
+      }
+    } catch (error) {
+      console.error("Error logging mood:", error);
+      toast.error("Failed to log mood");
+    }
+  };
+
   const startExercise = () => {
     setShowExerciseTimer(true);
   };
@@ -159,21 +227,30 @@ function Dashboard() {
               className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold w-full sm:w-auto"
               size="lg"
               radius="full"
-              startContent={<MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />}
+              startContent={
+                <MessageSquare
+                  className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                    isSubscribing ? "animate-spin" : ""
+                  }`}
+                />
+              }
+              isLoading={isSubscribing}
               onPress={async () => {
                 try {
+                  setIsSubscribing(true);
                   const auth = getAuth();
                   const user = auth.currentUser;
 
                   if (!user) {
-                    toast.error("Please sign in to subscribe");
+                    toast.error("Please sign in to manage subscription");
                     return;
                   }
 
+                  const endpoint = isSubscribed ? "unsubscribe" : "subscribe";
                   const response = await fetch(
                     `${
                       import.meta.env.VITE_API_BASE_URL
-                    }/users/subscribe-affirmations`,
+                    }/subscriptions/${endpoint}`,
                     {
                       method: "POST",
                       headers: {
@@ -186,24 +263,48 @@ function Dashboard() {
                       }),
                     }
                   );
-
                   if (response.ok) {
+                    setIsSubscribed(!isSubscribed);
                     toast.success(
-                      "Successfully subscribed to daily positive affirmations! ✨"
+                      isSubscribed
+                        ? "Successfully unsubscribed from daily affirmations"
+                        : "Successfully subscribed to daily affirmations! You will receive a daily affirmation in your email at 8 AM (UTC) every day. ✨"
                     );
                   } else {
-                    throw new Error("Failed to subscribe");
+                    const errorData = await response.json();
+                    throw new Error(
+                      errorData.message || `Failed to ${endpoint}`
+                    );
                   }
                 } catch (error) {
-                  console.error("Error subscribing to affirmations:", error);
-                  toast.warn("Feature in Progress");
+                  console.error(
+                    "Error managing affirmations subscription:",
+                    error
+                  );
+                  if (
+                    error.message ===
+                    "Invalid parameter: SubscriptionArn Reason: An ARN must have at least 6 elements, not 1"
+                  ) {
+                    toast.error(
+                      "First Confirm your subscription before unsubscribing"
+                    );
+                  } else {
+                    toast.error(
+                      error.message || "Failed to manage subscription"
+                    );
+                  }
+                } finally {
+                  setIsSubscribing(false);
                 }
               }}
             >
               <span className="hidden sm:inline">
-                Subscribe to Daily Affirmations
+                {isSubscribed ? "Unsubscribe from" : "Subscribe to"} Daily
+                Affirmations
               </span>
-              <span className="sm:hidden">Subscribe</span>
+              <span className="sm:hidden">
+                {isSubscribed ? "Unsubscribe" : "Subscribe"}
+              </span>
               <span className="ml-1">✨</span>
             </Button>
           </motion.div>
@@ -349,7 +450,7 @@ function Dashboard() {
         {[
           {
             title: "Connected Devices",
-            value: "3/3",
+            value: "0/3",
             icon: <Heart className="text-pink-500" />,
             color: "from-pink-500 to-rose-500",
           },
@@ -361,13 +462,13 @@ function Dashboard() {
           },
           {
             title: "Active Trackers",
-            value: "2 Active",
+            value: "0 Active",
             icon: <BarChart className="text-blue-500" />,
             color: "from-blue-500 to-indigo-500",
           },
           {
             title: "Health Score",
-            value: "85/100",
+            value: "?/100",
             icon: <Brain className="text-purple-500" />,
             color: "from-purple-500 to-violet-500",
           },
@@ -437,9 +538,13 @@ function Dashboard() {
         <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800">
           <CardBody className="p-6">
             <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <Activity className="mr-2 text-orange-500" /> Stress Monitor
+              <Activity className="mr-2 text-orange-500" /> AI Stress Analysis
             </h3>
             <div className="flex flex-col items-center justify-center space-y-6">
+              <p className="text-gray-400 text-sm text-center mb-4">
+                Your stress level is analyzed by our AI model using your fitness
+                data, mood patterns, and chat interactions
+              </p>
               <div className="relative w-48 h-48">
                 <svg className="w-full h-full transform -rotate-90">
                   <circle
@@ -470,14 +575,14 @@ function Dashboard() {
                   </span>
                 </div>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="10"
-                value={stressLevel}
-                onChange={(e) => setStressLevel(parseInt(e.target.value, 10))}
-                className="w-[80%] accent-orange-500"
-              />
+              <div className="text-center">
+                <p className="text-sm text-gray-400 mt-2">
+                  Stress Level: {stressLevel}/10
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Updated daily based on your activity patterns
+                </p>
+              </div>
             </div>
           </CardBody>
         </Card>
@@ -485,9 +590,37 @@ function Dashboard() {
 
       <Card className="bg-[#2a2b2e]/50 backdrop-blur-lg border border-gray-800 mb-8">
         <CardBody className="p-8">
-          <h3 className="text-2xl font-semibold mb-6 flex items-center">
-            <Brain className="mr-2 text-cyan-500" /> Current Mood
-          </h3>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-semibold flex items-center">
+              <Brain className="mr-2 text-cyan-500" /> Current Mood
+            </h3>
+            <Button
+              className="bg-cyan-500/20 text-cyan-400"
+              size="sm"
+              onPress={() => setShowMoodHistory(!showMoodHistory)}
+            >
+              View History
+            </Button>
+          </div>
+
+          {showMoodHistory && (
+            <div className="mb-6">
+              <div className="bg-[#1f2023] rounded-lg p-4 max-h-60 overflow-y-auto">
+                {moodHistory.map((entry, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-2 border-b border-gray-700 last:border-0"
+                  >
+                    <span className="text-gray-400">
+                      {new Date(entry.date).toLocaleDateString()}
+                    </span>
+                    <span className="text-cyan-400">Mood: {entry.mood}/10</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col items-center space-y-6">
             <div className="w-full max-w-md">
               <input
@@ -498,17 +631,17 @@ function Dashboard() {
                 onChange={handleMoodInput}
                 className="w-full accent-cyan-500"
               />
-              <div className="flex justify-between mt-2 text-sm text-gray-400">
-                <span>Very Low</span>
-                <span>Neutral</span>
-                <span>Very High</span>
+              <div className="flex justify-between mt-2 text-lg text-gray-400">
+                <span className="text-xl">Sad 😔</span>
+                <span className="text-xl">Neutral 😐</span>
+                <span className="text-xl">Happy 😊</span>
               </div>
             </div>
             <Button
               className="bg-gradient-to-r from-cyan-500 to-blue-500"
               size="lg"
               radius="full"
-              onPress={() => console.log("Mood logged:", currentMood)}
+              onPress={logMood}
             >
               Log Current Mood
             </Button>

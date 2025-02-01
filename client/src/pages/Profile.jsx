@@ -39,6 +39,7 @@ import { signOut } from "firebase/auth";
 function Profile() {
   const navigator = useNavigate();
   const { isDark, toggleTheme } = useTheme();
+  const [urlLoading, setUrlLoading] = useState(true);
   const [profile, setProfile] = useState({
     name: "",
     email: "",
@@ -53,7 +54,7 @@ function Profile() {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [url, setUrl] = useState("");
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -64,7 +65,8 @@ function Profile() {
           darkMode: isDark,
           shareData: userData.preferences?.shareData || false,
         });
-
+        setUrl(userData.photoURL);
+        setUrlLoading(false);
         setProfile((prevProfile) => ({
           ...prevProfile,
           name: userData.displayName || prevProfile.name,
@@ -265,10 +267,19 @@ function Profile() {
             <CardBody className="space-y-6">
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="relative group">
-                  <Avatar
-                    src="https://i.pravatar.cc/150"
-                    className="w-32 h-32 text-large ring-4 ring-purple-500/50 group-hover:ring-purple-500 transition-all duration-300"
-                  />
+                  {urlLoading ? (
+                    <div className="w-32 h-32 rounded-full bg-gray-700 animate-pulse" />
+                  ) : (
+                    <img
+                      src={url || "https://i.pravatar.cc/150"}
+                      alt="Profile"
+                      className="w-32 h-32 text-large ring-4 ring-purple-500/50 group-hover:ring-purple-500 transition-all duration-300 rounded-full object-cover"
+                      onError={(e) => {
+                        e.target.src = "/default-avatar.png";
+                      }}
+                    />
+                  )}
+
                   <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Button
                       isIconOnly
