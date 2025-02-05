@@ -210,6 +210,10 @@ gcloud run deploy soulsync-backend --image gcr.io/project-id/soulsync-backend
 - Separate containers for each model
 - Automated deployment through Cloud Build triggers
 
+###Checkout Our models
+- ChatBot : https://github.com/Chirag-Punia/mental-health-app-model
+- Wearables analyser: https://github.com/Chirag-Punia/wearablesMood
+
 ## 🔒 Security Features
 
 - End-to-end encryption
