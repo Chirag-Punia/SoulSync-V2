@@ -117,7 +117,7 @@ SoulSync is a comprehensive mental wellness platform that leverages artificial i
 
 ```bash
 # Clone repository
-git clone https://github.com/your-username/soulsync.git
+git clone https://github.com/Chirag-Punia/SoulSync-V2
 
 # Install dependencies
 cd client
