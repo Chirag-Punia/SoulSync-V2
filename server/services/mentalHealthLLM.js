@@ -13,7 +13,8 @@ export class MentalHealthLLM extends BaseLLM {
   async generateResponse(message) {
     try {
       const response = await axios.post(`${this.baseUrl}/chat`, {
-        query: message
+        query: `${message}`,
+        session_id : ""
       }, {
         headers: {
           'Content-Type': 'application/json'

@@ -31,9 +31,11 @@ function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [name, setName] = useState("User");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
+      setName(user.displayName);
       setIsAuthenticated(!!user);
     });
 
@@ -169,15 +171,15 @@ function Navbar() {
                 as="button"
                 className="transition-transform"
                 color="secondary"
-                name="User"
+                name={`${name}`}
                 size="sm"
-                src="https://api.dicebear.com/6.x/initials/svg?seed=User"
+                src={`https://api.dicebear.com/6.x/initials/svg?seed=${name}`}
               />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
               <DropdownItem key="profile" className="h-14 gap-2">
                 <p className="font-semibold">Signed in as</p>
-                <p className="font-semibold">User</p>
+                <p className="font-semibold">{`${name}`}</p>
               </DropdownItem>
               {menuItems.map((item, index) => (
                 <DropdownItem
@@ -207,12 +209,12 @@ function Navbar() {
             <div className="flex flex-col items-center mb-6">
               <Avatar
                 color="secondary"
-                name="User"
+                name={`${name}`}
                 size="lg"
                 src="https://api.dicebear.com/6.x/initials/svg?seed=User"
                 className="w-20 h-20 text-large mb-2"
               />
-              <p className="text-white font-semibold">User</p>
+              <p className="text-white font-semibold">{`${name}`}</p>
             </div>
             {menuItems.map((item, index) => (
               <NavbarMenuItem key={index} className="my-1">

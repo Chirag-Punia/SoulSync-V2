@@ -16,7 +16,7 @@ import moodRoutes from "./routes/moods.js";
 dotenv.config();
 
 const app = express();
-const PORT = 8080;
+const PORT = 5002;
 
 connectDB();
 

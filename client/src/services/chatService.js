@@ -2,12 +2,12 @@ import { api } from "./apiClient";
 import { getAuthToken } from "./authService";
 
 export const chatService = {
-  sendMessage: async (userId, message, chatId) => {
+  sendMessage: async (userId, message) => {
     try {
       const token = await getAuthToken();
       const response = await api.post(
         `/chat/${userId}`,
-        { message, chatId },
+        { message },
         {
           headers: { Authorization: `Bearer ${token}` },
         }

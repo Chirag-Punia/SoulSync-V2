@@ -122,6 +122,7 @@ const subscriptionService = {
       return true;
     } catch (error) {
       console.error("Unsubscribe service error:", error);
+      
       throw error;
     }
   },

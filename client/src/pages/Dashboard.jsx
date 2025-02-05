@@ -268,7 +268,7 @@ function Dashboard() {
                     toast.success(
                       isSubscribed
                         ? "Successfully unsubscribed from daily affirmations"
-                        : "Successfully subscribed to daily affirmations! You will receive a daily affirmation in your email at 8 AM (UTC) every day. ✨"
+                        : "Confirm your subscription in your email!.You will receive a daily affirmation in your email at 8 AM (UTC) every day.✨"
                     );
                   } else {
                     const errorData = await response.json();
@@ -318,29 +318,32 @@ function Dashboard() {
             icon: "🏃‍♂️",
             color: "from-green-400 to-cyan-500",
             connected: isGoogleFitConnected,
-            onPress: connectToGoogleFit,
+            onConnect: connectToGoogleFit,
             description:
               "Track fitness activities and health metrics with Google Fit integration",
             features: ["Activity tracking", "Heart rate", "Sleep analysis"],
+            demoLabel: "Demo: Click the card to interact",
           },
           {
             name: "Apple Health",
             icon: "❤️",
             color: "from-pink-500 to-rose-500",
             connected: isAppleHealthConnected,
-            onPress: connectToAppleHealth,
+            onConnect: connectToAppleHealth,
             description: "Sync your health and workout data from Apple Health",
             features: ["Workout data", "Vital signs", "Nutrition"],
+            demoLabel: "Demo: Click the card to interact",
           },
           {
             name: "Fitbit",
             icon: "⌚",
             color: "from-blue-400 to-indigo-500",
             connected: isFitbitConnected,
-            onPress: connectToFitbit,
+            onConnect: connectToFitbit,
             description:
               "Monitor your daily activities and wellness metrics with Fitbit",
             features: ["Step counting", "Sleep quality", "Exercise tracking"],
+            demoLabel: "Demo: Click the card to interact",
           },
         ].map((platform) => (
           <motion.div
@@ -350,14 +353,14 @@ function Dashboard() {
             className="h-full"
           >
             <Card
-              isPressable
-              onPress={platform.onPress}
               className={`
-          h-full bg-[#32333a]/30 backdrop-blur-sm
-          ${platform.connected ? "border-green-500/30" : "border-gray-800"}
-          hover:border-purple-500/50 transition-all duration-300
-          group
-        `}
+                h-full bg-[#32333a]/30 backdrop-blur-sm
+                ${
+                  platform.connected ? "border-green-500/30" : "border-gray-800"
+                }
+                hover:border-purple-500/50 transition-all duration-300
+                group
+              `}
             >
               <CardBody className="p-8">
                 <div className="flex items-center space-x-4 mb-6">
@@ -436,9 +439,13 @@ function Dashboard() {
                 }
                 hover:opacity-80 transition-opacity
               `}
+                    onPress={platform.onConnect}
                   >
                     {platform.connected ? "Manage" : "Connect"}
                   </Button>
+                </div>
+                <div className="absolute top-2 right-2 bg-gray-800 text-white text-xs p-1 rounded">
+                  {platform.demoLabel}
                 </div>
               </CardBody>
             </Card>
