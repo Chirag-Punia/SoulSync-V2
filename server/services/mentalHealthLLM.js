@@ -1,4 +1,4 @@
-import { BaseLLM } from "./baseLLM.js";     
+import { BaseLLM } from "./baseLLM.js";
 import axios from "axios";
 import dotenv from "dotenv";
 
@@ -7,21 +7,24 @@ dotenv.config();
 export class MentalHealthLLM extends BaseLLM {
   constructor(baseUrl) {
     super();
-    this.baseUrl = baseUrl || process.env.FLASK_API_URL; // URL where your Flask app is deployed
+    this.baseUrl = baseUrl || process.env.FLASK_API_URL;
   }
 
   async generateResponse(message) {
     try {
-      const response = await axios.post(`${this.baseUrl}/chat`, {
-        query: `${message}`,
-        session_id : ""
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await axios.post(
+        `${this.baseUrl}/chat`,
+        {
+          query: `${message}`,
+          session_id: "",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      });
+      );
 
-      // The Flask API returns both response and emotion analysis
       return response.data;
     } catch (error) {
       console.error("Flask API error:", error);

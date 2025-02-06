@@ -84,7 +84,7 @@ function Navbar() {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      navigate("/");
+      window.location.reload();
     } catch (error) {
       console.error("Error signing out:", error);
     }
@@ -238,7 +238,10 @@ function Navbar() {
                 className="bg-red-500/10 text-red-500 hover:bg-red-500/20"
                 startContent={<FaSignOutAlt />}
                 variant="flat"
-                onPress={handleLogout}
+                onPress={() => {
+                  setIsMenuOpen(false);
+                  handleLogout();
+                }}
               >
                 Log Out
               </Button>

@@ -9,15 +9,18 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Spinner,
 } from "@nextui-org/react";
-import { v4 as uuidv4 } from "uuid";
+import { createDailyRoom } from "../services/dailyService";
 import { FaUsers, FaVideo, FaPaste } from "react-icons/fa";
 
 const GroupTherapy = () => {
   const [isHost, setIsHost] = useState(false);
   const [roomId, setRoomId] = useState("");
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
+
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -26,10 +29,17 @@ const GroupTherapy = () => {
       toast.error("Failed to paste from clipboard");
     }
   };
-  const createSession = () => {
-    const newRoomId = uuidv4();
-    setIsHost(true);
-    navigate(`/group-therapy/${newRoomId}`);
+
+  const createSession = async () => {
+    setIsCreating(true);
+    try {
+      const roomId = await createDailyRoom();
+      setIsHost(true);
+      navigate(`/group-therapy/${roomId}`);
+    } catch (error) {
+      toast.error("Failed to create room");
+      setIsCreating(false);
+    }
   };
 
   const joinSession = () => {
@@ -57,9 +67,17 @@ const GroupTherapy = () => {
               className="bg-gradient-to-r from-purple-600 to-pink-600 text-white"
               onPress={createSession}
               size="lg"
-              startContent={<FaVideo />}
+              startContent={isCreating ? null : <FaVideo />}
+              isLoading={isCreating}
+              spinner={
+                <Spinner 
+                  color="white" 
+                  size="sm"
+                />
+              }
+              isDisabled={isCreating}
             >
-              Create New Session
+              {isCreating ? "Creating Session..." : "Create New Session"}
             </Button>
 
             <div className="relative">
@@ -78,6 +96,7 @@ const GroupTherapy = () => {
               onPress={() => setShowJoinModal(true)}
               size="lg"
               startContent={<FaUsers />}
+              isDisabled={isCreating}
             >
               Join Existing Session
             </Button>

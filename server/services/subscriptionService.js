@@ -2,7 +2,6 @@ import { SNS } from "@aws-sdk/client-sns";
 import { Lambda } from "@aws-sdk/client-lambda";
 import User from "../models/User.js";
 
-// Configure AWS
 const sns = new SNS({
   region: process.env.AWS_REGION,
   credentials: {
@@ -17,7 +16,6 @@ const subscriptionService = {
       const subscriptionArn = message.SubscriptionArn;
       const email = message.Endpoint;
 
-      // Update user in MongoDB with confirmed subscription ARN
       await User.findOneAndUpdate(
         { email },
         {
@@ -38,13 +36,11 @@ const subscriptionService = {
 
   async subscribeToAffirmations(email) {
     try {
-      // First, check if user is already subscribed
       const existingUser = await User.findOne({ email });
       if (existingUser && existingUser.isSubscribedToAffirmations) {
         throw new Error("User is already subscribed to affirmations");
       }
 
-      // Create or update SNS topic subscription
       const topicArn = process.env.AWS_SNS_TOPIC_ARN;
       const params = {
         Protocol: "email",
@@ -54,7 +50,6 @@ const subscriptionService = {
 
       const snsResponse = await sns.subscribe(params);
 
-      // Store user data with pending status
       const userData = {
         email,
         isSubscribedToAffirmations: true,
@@ -62,14 +57,12 @@ const subscriptionService = {
         subscriptionConfirmed: false,
       };
 
-      // If user exists, update their data, otherwise create new user
       const updatedUser = await User.findOneAndUpdate(
         { email },
         { $set: userData },
         { upsert: true, new: true }
       );
 
-      // Trigger welcome Lambda function
       const lambda = new Lambda({
         region: process.env.AWS_REGION,
         credentials: {
@@ -100,7 +93,6 @@ const subscriptionService = {
         throw new Error("User is not subscribed to affirmations");
       }
 
-      // Unsubscribe from SNS topic
       if (user.snsSubscriptionArn) {
         const params = {
           SubscriptionArn: user.snsSubscriptionArn,
@@ -108,7 +100,6 @@ const subscriptionService = {
         await sns.unsubscribe(params);
       }
 
-      // Update user in MongoDB
       await User.findOneAndUpdate(
         { email },
         {
@@ -122,7 +113,7 @@ const subscriptionService = {
       return true;
     } catch (error) {
       console.error("Unsubscribe service error:", error);
-      
+
       throw error;
     }
   },

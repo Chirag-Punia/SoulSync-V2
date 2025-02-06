@@ -160,12 +160,10 @@ function ChatBot() {
     }
   };
 
-
   return (
     <div className="h-[40rem] w-full flex items-center justify-center p-4">
       <div className="w-full max-w-3xl h-[37.5rem]">
         <Card className="h-full bg-black/20 backdrop-blur-xl border border-white/10 rounded-lg shadow-xl">
-          {/* Chat Header */}
           <div className="p-4 border-b border-white/10 bg-white/5">
             <div className="flex items-center gap-3">
               <Avatar
@@ -173,7 +171,9 @@ function ChatBot() {
                 className="bg-gradient-to-br from-purple-600 to-pink-600"
               />
               <div>
-                <h2 className="text-lg font-semibold text-white">AI Assistant</h2>
+                <h2 className="text-lg font-semibold text-white">
+                  AI Assistant
+                </h2>
                 <p className="text-sm text-white/60">Always here to help</p>
               </div>
             </div>
@@ -198,7 +198,8 @@ function ChatBot() {
                       Hi! I'm your AI Assistant
                     </h3>
                     <p className="text-center">
-                      I'm here to help! Start a conversation by typing a message below.
+                      I'm here to help! Start a conversation by typing a message
+                      below.
                     </p>
                   </div>
                 ) : (
@@ -208,7 +209,9 @@ function ChatBot() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className={`flex items-start gap-2 ${
-                        message.sender === "user" ? "justify-end" : "justify-start"
+                        message.sender === "user"
+                          ? "justify-end"
+                          : "justify-start"
                       }`}
                     >
                       {message.sender === "bot" && (
@@ -310,6 +313,6 @@ function ChatBot() {
       </div>
     </div>
   );
-};
+}
 
 export default ChatBot;

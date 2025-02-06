@@ -17,7 +17,6 @@ const moodSchema = new mongoose.Schema({
   },
 });
 
-// Index for faster queries
 moodSchema.index({ userId: 1, timestamp: -1 });
 
 export default mongoose.model("Mood", moodSchema);

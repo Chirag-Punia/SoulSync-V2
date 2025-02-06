@@ -54,7 +54,6 @@ export class ChatController {
           .json({ error: "User ID and message are required" });
       }
 
-      // Get response from Flask API
       const response = await this.llm.generateResponse(message);
 
       let chat = await Chat.findOne({ userId });
@@ -63,14 +62,12 @@ export class ChatController {
         chat = new Chat({ userId, messages: [] });
       }
 
-      // Save user message
       chat.messages.push({
         text: message,
         sender: "user",
         timestamp: new Date(),
       });
 
-      // Save bot response with emotion data
       chat.messages.push({
         text: response.response,
         sender: "bot",
