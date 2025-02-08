@@ -18,6 +18,7 @@ import TherapyRoom from "./pages/TherapyRoom";
 import ErrorBoundary from "./components/ErrorBoundary";
 import EmotionDetector from "./pages/EmotionDetector";
 import Dashboard from "./pages/Dashboard.jsx";
+import ErrorPage from "./pages/ErrorPage";
 const App = () => {
   return (
     <>
@@ -95,14 +96,6 @@ const App = () => {
                     }
                   />
                   <Route
-                    path="/group-therapy"
-                    element={
-                      <PrivateRoute>
-                        <GroupTherapy />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
                     path="/EmotionDetector"
                     element={
                       <PrivateRoute>
@@ -110,6 +103,7 @@ const App = () => {
                       </PrivateRoute>
                     }
                   />
+
                   <Route
                     path="/group-therapy/:roomId"
                     element={
@@ -128,6 +122,7 @@ const App = () => {
                       </PrivateRoute>
                     }
                   />
+                  <Route path="*" element={<ErrorPage />} />
                 </Routes>
               </main>
             </div>

@@ -322,7 +322,8 @@ function Dashboard() {
             description:
               "Track fitness activities and health metrics with Google Fit integration",
             features: ["Activity tracking", "Heart rate", "Sleep analysis"],
-            demoLabel: "Demo: Click the card to interact",
+            demoLabel:
+              "In development : only test users can share data with soulsync",
           },
           {
             name: "Apple Health",
@@ -332,7 +333,6 @@ function Dashboard() {
             onConnect: connectToAppleHealth,
             description: "Sync your health and workout data from Apple Health",
             features: ["Workout data", "Vital signs", "Nutrition"],
-            demoLabel: "Demo: Click the card to interact",
           },
           {
             name: "Fitbit",
@@ -343,7 +343,6 @@ function Dashboard() {
             description:
               "Monitor your daily activities and wellness metrics with Fitbit",
             features: ["Step counting", "Sleep quality", "Exercise tracking"],
-            demoLabel: "Demo: Click the card to interact",
           },
         ].map((platform) => (
           <motion.div

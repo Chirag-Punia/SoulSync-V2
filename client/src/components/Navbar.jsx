@@ -24,6 +24,7 @@ import {
   FaBookOpen,
   FaUser,
   FaSignOutAlt,
+  FaVolumeUp,
 } from "react-icons/fa";
 
 function Navbar() {
@@ -62,7 +63,6 @@ function Navbar() {
       path: "/community",
       icon: <FaUsers className="text-xl" />,
     },
-
     {
       name: "Group Therapy",
       path: "/group-therapy",

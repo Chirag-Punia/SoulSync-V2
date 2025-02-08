@@ -21,6 +21,9 @@ import { CalendarIcon, PlusIcon, EditIcon, TrashIcon } from "lucide-react";
 import ChallengesTabs from "../components/ChallengesTabs";
 import { googleCalendarService } from "../services/googleCalendarService";
 import { toast } from "react-toastify";
+import Therapists from "./Therapists";
+import SelfAssessment from "./SelfAssessment";
+import Helplines from "./Helplines";
 const getResourceTypeColor = (type) => {
   switch (type) {
     case "article":
@@ -502,6 +505,30 @@ function Resources() {
         >
           Music Therapy
         </Button>
+        <Button
+          color={activeTab === "therapists" ? "secondary" : "default"}
+          variant={activeTab === "therapists" ? "shadow" : "light"}
+          onPress={() => setActiveTab("therapists")}
+          className="flex-1 md:flex-none"
+        >
+          Book a Therapist
+        </Button>
+        <Button
+          color={activeTab === "assessment" ? "secondary" : "default"}
+          variant={activeTab === "assessment" ? "shadow" : "light"}
+          onPress={() => setActiveTab("assessment")}
+          className="flex-1 md:flex-none"
+        >
+          Self Assessment
+        </Button>
+        <Button
+          color={activeTab === "helplines" ? "secondary" : "default"}
+          variant={activeTab === "helplines" ? "shadow" : "light"}
+          onPress={() => setActiveTab("helplines")}
+          className="flex-1 md:flex-none"
+        >
+          Helplines
+        </Button>
       </div>
 
       {activeTab === "resources" ? (
@@ -618,8 +645,14 @@ function Resources() {
             </CardBody>
           </Card>
         </>
-      ) : (
+      ) : activeTab === "music" ? (
         <MusicTherapy />
+      ) : activeTab === "therapists" ? (
+        <Therapists />
+      ) : activeTab === "assessment" ? (
+        <SelfAssessment />
+      ) : (
+        <Helplines />
       )}
 
       <Modal
