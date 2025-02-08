@@ -239,9 +239,6 @@ function ChatBot() {
           setTypingMessage(null);
           setIsTyping(false);
 
-          if (audioEnabled) {
-            await speakResponse(response, selectedVoice.id);
-          }
         }, typingDuration);
       }
     } catch (error) {
