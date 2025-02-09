@@ -19,6 +19,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import EmotionDetector from "./pages/EmotionDetector";
 import Dashboard from "./pages/Dashboard.jsx";
 import ErrorPage from "./pages/ErrorPage";
+
 const App = () => {
   return (
     <>
@@ -114,6 +115,7 @@ const App = () => {
                       </PrivateRoute>
                     }
                   />
+
                   <Route
                     path="/profile"
                     element={

@@ -112,6 +112,7 @@ const resourceCategories = [
 ];
 
 function Resources() {
+  const [isMobile, setIsMobile] = useState(false);
   const [activeTab, setActiveTab] = useState("resources");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [schedule, setSchedule] = useState([]);
@@ -143,6 +144,88 @@ function Resources() {
   useEffect(() => {
     setIsGoogleAuthorized(googleCalendarService.isAuthorized());
   }, []);
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Check initially
+    checkIfMobile();
+
+    // Add event listener
+    window.addEventListener("resize", checkIfMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
+  const MobileTabsDropdown = () => (
+    <Dropdown>
+      <DropdownTrigger>
+        <Button className="w-full mb-4" color="secondary">
+          {activeTab === "resources"
+            ? "Health Resources"
+            : activeTab === "music"
+            ? "Music Therapy"
+            : activeTab === "therapists"
+            ? "Book a Therapist"
+            : activeTab === "assessment"
+            ? "Self Assessment"
+            : "Helplines"}
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        aria-label="Navigation Options"
+        onAction={(key) => setActiveTab(key)}
+      >
+        <DropdownItem key="resources">Health Resources</DropdownItem>
+        <DropdownItem key="music">Music Therapy</DropdownItem>
+        <DropdownItem key="therapists">Book a Therapist</DropdownItem>
+        <DropdownItem key="assessment">Self Assessment</DropdownItem>
+        <DropdownItem key="helplines">Helplines</DropdownItem>
+      </DropdownMenu>
+    </Dropdown>
+  );
+
+  // Desktop tabs
+  const DesktopTabs = () => (
+    <div className="flex flex-wrap gap-2">
+      <Button
+        color={activeTab === "resources" ? "secondary" : "default"}
+        variant={activeTab === "resources" ? "shadow" : "light"}
+        onPress={() => setActiveTab("resources")}
+      >
+        Health Resources
+      </Button>
+      <Button
+        color={activeTab === "music" ? "secondary" : "default"}
+        variant={activeTab === "music" ? "shadow" : "light"}
+        onPress={() => setActiveTab("music")}
+      >
+        Music Therapy
+      </Button>
+      <Button
+        color={activeTab === "therapists" ? "secondary" : "default"}
+        variant={activeTab === "therapists" ? "shadow" : "light"}
+        onPress={() => setActiveTab("therapists")}
+      >
+        Book a Therapist
+      </Button>
+      <Button
+        color={activeTab === "assessment" ? "secondary" : "default"}
+        variant={activeTab === "assessment" ? "shadow" : "light"}
+        onPress={() => setActiveTab("assessment")}
+      >
+        Self Assessment
+      </Button>
+      <Button
+        color={activeTab === "helplines" ? "secondary" : "default"}
+        variant={activeTab === "helplines" ? "shadow" : "light"}
+        onPress={() => setActiveTab("helplines")}
+      >
+        Helplines
+      </Button>
+    </div>
+  );
   const handleGoogleCalendarAuth = async () => {
     try {
       setLoading(true); // Add loading state
@@ -503,7 +586,7 @@ function Resources() {
           onPress={() => setActiveTab("music")}
           className="flex-1 md:flex-none"
         >
-          Music Therapy
+          a Music Therapy
         </Button>
         <Button
           color={activeTab === "therapists" ? "secondary" : "default"}

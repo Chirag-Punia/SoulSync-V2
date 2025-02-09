@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: mental-health-app
+data:
+  VITE_API_BASE_URL: "http://localhost:5002/api"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: mental-health-app
+data:
+  NODE_ENV: "production"
+  GOOGLE_CLIENT_FALLBACK: "https://api.yourdomain.com/api/gfit/auth/callback"
+  FITBIT_AUTH_URL: "https://www.fitbit.com/oauth2/authorize"
+  FITBIT_TOKEN_URL: "https://api.fitbit.com/oauth2/token"
+  REDIRECT_URI: "https://api.yourdomain.com/oauth/callback"
+  CLIENT_URL: "https://yourdomain.com"
+  AWS_REGION: ${AWS_REGION}
+  AWS_SNS_TOPIC_ARN: ${AWS_SNS_TOPIC_ARN}
+  AWS_LAMBDA_WELCOME_FUNCTION: ${AWS_LAMBDA_WELCOME_FUNCTION}
+  FLASK_API_URL: ${FLASK_API_URL}

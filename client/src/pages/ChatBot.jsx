@@ -27,8 +27,7 @@ import {
   FaLeaf,
 } from "react-icons/fa";
 import { MdSelfImprovement } from "react-icons/md";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+
 
 function ChatBot() {
   const [messages, setMessages] = useState([]);

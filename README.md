@@ -147,8 +147,8 @@ VITE_API_BASE_URL=http://localhost:5002/api
 # Face++ API Configuration
 VITE_FACE_API_KEY=your_face_api_key
 VITE_FACE_API_SECRET=your_face_api_secret
+VITE_ELEVENLABS_API_KEY: your_elevenLabs_key
 ```
-
 #### Backend (.env)
 
 ```
@@ -204,15 +204,28 @@ FLASK_API_URL=your_flask_api_url
 gcloud builds submit --tag gcr.io/project-id/soulsync-backend
 gcloud run deploy soulsync-backend --image gcr.io/project-id/soulsync-backend
 ```
+### K8s support 
+## 📁 Project Structure
+```
 
-### ML Models (Google Cloud Run)
+k8s/
+├── namespace.yaml
+├── configmap.yaml
+├── secrets.yaml
+├── deployments.yaml
+├── services.yaml
+└── ingress.yaml
+```
+## 📁 Commands
+```bash
+chmod +x deploy.sh
 
-- Separate containers for each model
-- Automated deployment through Cloud Build triggers
+./deploy.sh
 
-### Checkout Our models
-- ChatBot : https://github.com/Chirag-Punia/mental-health-app-model
-- Wearables analyser: https://github.com/Chirag-Punia/wearablesMood
+kubectl get all -n mental-health-app
+
+```
+
 
 ## 🔒 Security Features
 

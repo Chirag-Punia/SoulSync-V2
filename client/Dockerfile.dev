@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 
-EXPOSE 8080
+EXPOSE 5173
 
 
-CMD [ "node", "index.js" ] 
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
